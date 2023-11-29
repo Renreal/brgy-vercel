@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="home.css">
+    <title>Brgy. Camaman-an Docu Request</title>
+    <link rel="icon" type="image/x-icon" href="LOGO.png">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <!-- Navbar -->
+        <div class="navbar">
+            <div class="logo">
+              <a href="LandingPage.html">
+            <img src="LOGO.png" alt=""></a>
+            </div>
+            <div class="nav-items" id="navItems">
+            <!--  <a href="#about">About Us</a>
+                <a href="#">Brgy Updates</a>
+                <a href="#">Services</a>
+                <a href="/Index.html">Login</a>
+                <a href="/Index.html">Signup</a>
+                <a href="/Index.html">A dmin</a> -->
+            </div>
+        </div>
+
+        <div class="dashboard-contents">
+        <!-- history -->
+           
+                 <div class="c1">
+                    <ul>
+                    <li><span>Welcome Back,</span>  <span id="firstName"></span><span>!</span></li> 
+                    </ul>
+                    <div class="dataContainer">
+                      <p class="title">history</p>
+                      <p class="header">time table</p>
+                    <div id="data-display"></div>
+                    </div>
+                    </div> 
+          
+        <!-- to pick-up -->
+                    <div class="c2">
+                        <h1 id="Date"></h1>
+                        <div class="pickupContainer">
+                            <h2>Ready for pick-up</h2>
+                        <div id="document-value"><!-- display here the documents that are ready for pick-up --></div>
+                        <p id="amount"><!-- amount here --></p>
+                        <input type="date" id="calendar">
+                        </div>   
+                    </div>
+        </div>
+
+
+<!-- Footer Section -->
+        <div class="footer">
+          <div class="divider">
+              <div class="government-agencies">
+                  <span>
+                      Other Government Agencies
+                  </span>
+                  <p>
+                      Department of Trade and Industry (DTI)
+                      Department of Interior and Local Government (DILG)
+                      Department of Justice (DOJ)
+                      Department of Labor and Employment (DOLE)
+                </p>
+              </div>
+              <div class="about-us" id="about">
+                  <span>ABOUT US</span>
+                    This website aims to enhance the convenience of Barangay Camaman-an residents. 
+                    Requesting documents will be simplified as individuals can place orders online, 
+                    and officials will prepare the documents at their office. Residents will receive notifications 
+                    when their documents are ready for pickup.
+              </div>
+          </div>
+
+          <div class="copyright">
+              © all rights reserved - brgyDocuRequest 2023
+          </div>
+        
+        </div>
+</div>
+
+
+
+<script type="module" src="nav.js"></script>
+<script type="module" src="dashboard-script.js"></script>
+</body>
+</html>

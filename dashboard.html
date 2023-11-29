@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="dashboard.css  ">
+    <title>Brgy. Camaman-an Docu Request</title>
+    <link rel="icon" type="image/x-icon" href="LOGO.png">
+</head>
+<body>
+  <div class="wrapper">
+    <nav class="nav">
+      <div class="nav-logo">
+          <img src="LOGO.png">  
+      </div>
+      <span class="spantext">View your transaction history and general account information below
+      </span>
+    </nav>
+      <div class="user-data">
+        <h2></h2>
+        <ul>
+            <li><strong>First Name:</strong> <span id="firstName"></span></li>
+            <li><strong>Last Name:</strong> <span id="lastName"></span></li>
+            <li><strong>Email:</strong> <span id="email"></span></li>
+        </ul>
+        <div id="data-display"></div>
+    </div>
+    
+  <div class="arrow"><a href="LandingPage.html">
+    <img src="arrow.png"></a>
+  </div>
+</div>
+
+
+
+
+
+    <script type="module">
+                     // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+                import { 
+                    getAuth,
+                    createUserWithEmailAndPassword,
+                    signInWithEmailAndPassword,
+                    onAuthStateChanged,
+                    signOut
+                } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+                import {
+                  getFirestore,
+                  collection,
+                  addDoc, getDoc, doc, query, where, getDocs
+                    } from 'https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js';
+        
+        
+        
+         // Your web app's Firebase configuration
+               
+                const firebaseConfig = {
+                apiKey: "AIzaSyDHWn2BsQUOLs4LdGeRwY9HqL-t9zlYEjQ",
+                authDomain: "authfun-b2577.firebaseapp.com",
+                projectId: "authfun-b2577",
+                storageBucket: "authfun-b2577.appspot.com",
+                messagingSenderId: "130874970746",
+                appId: "1:130874970746:web:3952d2f045e4905af361c3"
+                };
+
+                    // Initialize Firebase
+                    const app = initializeApp(firebaseConfig);
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+                
+                //tracks the user's st wether they are logged in or logged out
+                const checkAuthState = async() => { 
+                                onAuthStateChanged(auth, user => {
+                                    if(user){
+                                      //viewTransactionButton.addEventListener('click', displayCurrentUserData);
+                                      console.log("User is logged in");
+                                      displayCurrentUserData();
+                                        }
+                                        else{
+                                        location.replace("index.html");
+                                          console.log("user logged out");
+                                        }
+                                }) 
+                            }
+
+                            checkAuthState(); 
+                                          
+              // Reference to the container elements for displaying user data
+                      const firstNameElement = document.getElementById('firstName');
+                      const lastNameElement = document.getElementById('lastName');
+                      const emailElement = document.getElementById('email');        
+
+              // Function to fetch and display the current user's data
+              const displayCurrentUserData = async () => {
+                try {
+                  // Get the currently authenticated user
+                  const user = auth.currentUser;
+
+                  if (user) { 
+                    
+                    const userId = user.uid;
+                    const parentDocRef = doc(db, 'userRecords', userId);
+                    const subcollectionRef = collection(parentDocRef, 'history');
+                    const querySnap = await getDocs(subcollectionRef);
+
+                    const dataDisplay = document.getElementById('data-display'); // Get the HTML element
+
+                    querySnap.forEach((doc) => {
+                      const data = doc.data();
+                      const timestamp = data.timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
+                      const value = data.value;
+
+                      // Create a new HTML element to display the formatted data
+                      const dataElement = document.createElement('p');
+                      dataElement.textContent = `Timestamp: ${timestamp.toLocaleString()} | Value: ${value}`;
+
+                      // Append the new data element to the data-display div
+                      dataDisplay.appendChild(dataElement);
+                    });
+
+
+
+                    // Get the email of the current user
+                    const userEmail = user.email;
+                    console.log('User Email:', userEmail);
+                  
+                    // Query Firestore to find the document with the matching email
+                    const userQuery = query(collection(db, 'userRecords'), where('email', '==', userEmail));
+                    const querySnapshot = await getDocs(userQuery);
+
+                    if (!querySnapshot.empty) {
+                      // Assuming there's only one document with the matching email
+                      const userDocSnapshot = querySnapshot.docs[0];
+                      const userData = userDocSnapshot.data();
+                      console.log('User Data:', userData);
+
+                      // Display the user's data on the page
+                      firstNameElement.textContent = userData.name;
+                      lastNameElement.textContent = userData.lastname;
+                      emailElement.textContent = userData.email;
+                    } else {
+                      // Handle the case where no matching document is found
+                      console.log('User document with the email does not exist.');
+                    }
+                  } else {
+                    // Handle the case where no user is logged in
+                    console.log('No user is currently logged in.');
+                  }
+                } catch (error) {
+                  console.error('Error fetching user data:', error);
+                }
+              }; 
+            
+
+    </script>
+</body>
+</html>
