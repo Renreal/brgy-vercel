@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baranggay Docu-Request</title>
+    <link rel="stylesheet" href="home.css">
+    
+</head>
+<body>
+    <div class="wrapper">
+            <!--- Navbar -->
+            <div class="navbar">
+                <div class="logo">
+                <a href="LandingPage.html">
+                <img src="LOGO.png" alt=""></a>
+                </div>
+                <div class="nav-items" id="navItems">
+                <!--  <a href="#about">About Us</a>
+                    <a href="#">Brgy Updates</a>
+                    <a href="#">Services</a>
+                    <a href="/Index.html">Login</a>
+                    <a href="/Index.html">Signup</a>
+                    <a href="/Index.html">A dmin</a> -->
+                </div>
+            </div>
+
+        <!-- main section -->
+                <div class="main-items">
+                    <div class="container1">
+                        <h1>welcome to baranggay camaman-an Document Request Website</h1>
+                        <p>Para sa residente sa Camaman-an, alang sa mga katawhan atong serbisyo.
+                        Luwas, lig-on ug gipa sayon na ang pagkuha sa mga dokumento nga inyong kinahanglan sa 
+                            usa ka click nalang
+                </p>
+            </div>
+            <div class="container2">
+                <span>What document do you like to request?</span>
+                <p>(unsa nga documento ang imong kinahanglan?)</p>
+                <div class="buttons">
+                    
+                    <select id="selectOption" onchange="updateOrder()">
+                        <option value="" selected disabled>Select an option</option>
+                        <option id="confirmationButton1"  value="Cedula">Brgy Cedula</option>
+                        <option id="confirmationButton2"  value="Certificate">Brgy Certificate</option>
+                        <option id="confirmationButton3" value="Clearance">Brgy Clearance</option>
+                    </select>
+
+
+
+                    <a class="place-order" id="dashboardLink">Place Order</a>
+
+                    
+
+
+                </div>  
+
+            </div>
+ <!-- Modal HTML --> 
+ 
+                <div id="confirmationModal">
+                    <p>Please confirm your details</p>
+                    <p id="Order"></p>
+                    <img src="1.png" alt="">
+                    <div class="account-details">
+                        
+                          <div class="userInfo">
+                            <p>firstname: </p><input type="text" id="firstName">
+                            <p>lastname: </p><input type="text" id="lastName">                      
+                            <p>middlename: </p><input type="text" id="middleName">
+                          </div>
+                          <div class="userInfo">
+                            <p>Age: </p><input type="text" id="Age">
+                            <p>Gender: </p><input type="text" id="Gender">
+                            <p>birthday: </p><input type="text" id="bday">
+                          </div>
+                          <div class="userInfo">
+                            <p>birth place: </p><input type="text" id="bplace">                
+                            <p>Address: </p><input type="text" id="Address">
+                            <p>Nationality: </p><input type="text" id="Nationality">
+                          </div>
+                          <div class="userInfo">
+                            <p>status: </p><input type="text" id="status">
+                            <p>occupation: </p><input type="text" id="work">                        
+                            <p>contact number: </p><input type="text" id="contact">
+                          </div>
+                    </div>
+                  
+                    <div class="modalBtn">
+                    <button id="yesButton">confirm</button>
+                    <button id="noButton">cancel</button>
+                    </div>
+                 
+                </div>
+                <!-- Overlay background -->
+                <div id="overlay"></div>
+
+        </div>
+        
+
+
+
+<!-- Footer Section -->
+        <div class="footer">
+            <div class="divider">
+                <div class="government-agencies">
+                    <span>
+                        Other Government Agencies
+                    </span>
+                    <p>
+                        Department of Trade and Industry (DTI)
+                        Department of Interior and Local Government (DILG)
+                        Department of Justice (DOJ)
+                        Department of Labor and Employment (DOLE)
+                   </p>
+                </div>
+                <div class="about-us" id="about">
+                    <span>ABOUT US</span>
+                    This website aims to enhance the convenience of Barangay Camaman-an residents. 
+                    Requesting documents will be simplified as individuals can place orders online, 
+                    and officials will prepare the documents at their office. Residents will receive notifications 
+                    when their documents are ready for pickup.
+                    </div>
+            </div>
+
+            <div class="copyright">
+                 © all rights reserved - brgyDocuRequest 2023
+            </div>
+           
+        </div>
+    </div>
+
+    
+<script type="module" src="auth-state.js"></script>      
+<script type="module" src="nav.js"></script>      
+</body>
+</html>
