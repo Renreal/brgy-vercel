@@ -330,6 +330,11 @@ a img{
     font-size: 2rem;
     text-transform: uppercase;
 }
+.order-flex{
+    height: 50vh;
+    overflow: auto;
+    text-transform: capitalize;
+}
 .orders{
     border-color: black;
     border-style: solid;
@@ -342,15 +347,21 @@ a img{
     background-color:black;
 }
 .order-container {
-    
     display: flex;
-    justify-content: space-between;
-    margin: 1rem 1rem;
+    margin: 1rem 3rem 2rem 4rem;
     border-bottom: 1px dotted black;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    font-size: 1.5rem;
+    justify-content: space-between;
 }
 .order-container img{
     width: 1rem;
+}
+.icons{display: flex;}
+.icons p{
+    margin-right: 1rem;
+    cursor: pointer;
 }
 .type{
     display: contents;
@@ -359,13 +370,30 @@ a img{
     color:black;
     font-weight: bold;
 }
-.action {
+#pop-up{
+    display: none;
+    margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 1rem rgb(0 0 0 / 79%);
+    z-index: 1000;
+}
+.btns-wrapper{
     display: flex;
-    justify-content: space-between;
-    align-content: space-between;
-    flex-direction: row;
-    align-items: flex-start;
-    width: 11vw;
-    flex-wrap: wrap;
-    margin-right: 1rem;
+    margin-top: 2rem;
+    justify-content: space-evenly;
+}
+.btns-wrapper button{
+    padding: 0.5rem;
+}
+#cancel:hover{
+    background-color: red;
+}
+#yes:hover{
+    background-color: rgb(96, 148, 96);
 }
