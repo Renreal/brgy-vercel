@@ -67,6 +67,7 @@ const querySnap = await getDocs(subcollectionRef);
 
 const dataDisplay = document.getElementById('data-display'); // Get the HTML element
 const docValue = document.getElementById('document-value');
+let totalClaims = 0;
 
 querySnap.forEach((doc) => {
  const data = doc.data();
@@ -86,7 +87,7 @@ querySnap.forEach((doc) => {
 
 //display the all document that has a value of ready for pickup
  if (status === "ready for pickup"){
-     let totalAmount = 50; 
+     let totalAmount = 100; 
      const claim = document.createElement('p');
      const amount = document.getElementById('amount');
      const claimDate = document.getElementById('Date');
@@ -103,8 +104,8 @@ querySnap.forEach((doc) => {
      claim.textContent = `- ${value}`;
      docValue.appendChild(claim);
 
-     totalAmount += 50;
-     amount.textContent = 'To pay: '+ totalAmount + ' Pesos';   
+     
+     amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
     }
  
 

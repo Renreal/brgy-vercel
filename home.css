@@ -397,3 +397,38 @@ a img{
 #yes:hover{
     background-color: rgb(96, 148, 96);
 }
+#info-modal{
+    display: none;
+    margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 5rem;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 1rem rgb(0 0 0 / 79%);
+    z-index: 1000;
+    text-transform: capitalize;
+    height: 70vh;
+    overflow: auto;
+}
+.image img{
+    width: 5rem;
+    border-radius: 5rem;
+    margin-bottom: 1rem;
+}
+.exit{
+    position: absolute;
+    top: 0.5rem;
+    right: 1.5rem;
+}
+#info-modal span{
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+#info-modal span:hover{
+    font-size: 1.5rem;
+    font-weight:lighter;
+}

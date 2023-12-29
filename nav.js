@@ -44,7 +44,7 @@ const navItemsContainer = document.getElementById('navItems');
                     <a href="/LandingPage.html">Services</a>
                     <a id="signOutButton">Sign Out</a>
                     <a href="" id="profileImage"><img src="personIcon.svg">
-                    <span class="notif" id="notif">3</span></a>
+                    </a>
                 `;
                 const signOutButton = document.getElementById('signOutButton');
                 signOutButton.addEventListener('click', userSignout);
