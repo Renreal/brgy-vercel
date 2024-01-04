@@ -42,13 +42,17 @@
           
         <!-- to pick-up -->
                     <div class="c2">
-                        <h1 id="Date"></h1>
-                        <div class="pickupContainer">
-                            <h2>Ready for pick-up</h2>
-                        <div id="document-value"><!-- display here the documents that are ready for pick-up --></div>
-                        <p id="amount"><!-- amount here --></p>
-                        <input type="date" id="calendar">
-                        </div>   
+                      <div class="claimSlip">
+                      <h1 id="Date"></h1>
+                      <div class="pickupContainer">
+                          <h2>Ready for pick-up</h2>
+                      <div id="document-value"><!-- display here the documents that are ready for pick-up --></div>
+                      <p id="amount"><!-- amount here --></p>
+                      <input type="date" id="calendar">
+                      </div>  
+                      </div>  
+                     
+                        <button onclick="printClaimSlip()" id="print">Print Claim Slip</button>
                     </div>
         </div>
 
@@ -87,5 +91,23 @@
 
 <script type="module" src="nav.js"></script>
 <script type="module" src="dashboard-script.js"></script>
+<script>
+   document.getElementById('print').addEventListener('click', () => {
+    printClaimSlip();
+});
+
+// Function to print the claim slip
+function printClaimSlip() {
+    // Clone the claimSlip div to create a new window with only the necessary content
+    const printWindow = window.open('', '_blank');
+    const claimSlipClone = document.querySelector('.claimSlip').cloneNode(true);
+
+    // Append the cloned claimSlip div to the new window
+    printWindow.document.body.appendChild(claimSlipClone);
+
+    // Open the print dialog for the new window
+    printWindow.print();
+}
+</script>
 </body>
 </html>

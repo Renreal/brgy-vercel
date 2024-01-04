@@ -432,3 +432,14 @@ a img{
     font-size: 1.5rem;
     font-weight:lighter;
 }
+#print{
+  
+    float: right;
+    background-color: aliceblue;
+    border-color: transparent;
+    padding: 0.5rem;
+}
+#print:hover{
+    background-color: rgb(107, 71, 16);
+    color: white;
+}
