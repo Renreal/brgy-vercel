@@ -13,7 +13,7 @@
                     addDoc,
                     doc,
                     getDocs,
-                    query,where,
+                    query,where, runTransaction 
                     } from 'https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js';
                   
                    
@@ -101,6 +101,7 @@
                     }
 
                     document.getElementById('dashboardLink').addEventListener('click', showModal);        
+                    document.getElementById('noButton').addEventListener('click', hideModal);        
                     
 
                     
@@ -119,53 +120,65 @@
             }
             window.updateOrder = updateOrder;
 
+          let increment = 1;
           
           
-          
-            document.getElementById('yesButton').addEventListener('click', async () => {
-                try {
-                    // Get the selected option value
-                    const selectedOption = document.getElementById("selectOption");
-                    const selectedValue = selectedOption.options[selectedOption.selectedIndex].value;
-            
-                    // Get the currently logged-in user
-                    const user = auth.currentUser;
-            
-                    if (user) {
-                        // Store the selected value in Firestore subcollection
-                        const userId = user.uid;
-                        // Reference to the parent document
-                        const parentDocRef = doc(db, 'userRecords', userId);
-                        // Reference to the subcollection within the parent document
+          document.getElementById('yesButton').addEventListener('click', async () => {
+            try {
+                // Get the selected option value
+                const selectedOption = document.getElementById("selectOption");
+                const selectedValue = selectedOption.options[selectedOption.selectedIndex].value;
+        
+                // Get the currently logged-in user
+                const user = auth.currentUser;
+        
+                if (user) {
+                    // Store the selected value in Firestore subcollection
+                    const userId = user.uid;
+        
+                    // Reference to the parent document
+                    const parentDocRef = doc(db, 'userRecords', userId);
+                    const countersDocRef = doc(db, 'counters', 'wpLtpQGyMnP3tbiliXB0');
+        
+                    // Use a transaction to ensure atomicity
+                    await runTransaction(db, async (transaction) => {
+                        const countersDocSnapshot = await transaction.get(countersDocRef);
+                        const orderNumber = countersDocSnapshot.data().OrderNumber;
+        
+                        // Update the OrderNumber in the counters collection
+                        transaction.update(countersDocRef, { OrderNumber: orderNumber + 1 });
+        
+                        // Reference to the subcollection
                         const subcollectionRef = collection(parentDocRef, 'history');
+        
+                        // Add a document to the subcollection with the updated OrderNumber value
                         await addDoc(subcollectionRef, {
                             value: selectedValue,
                             timestamp: new Date(),
                             status: 'pending',
+                            orderNumber: orderNumber + 1, // Include the updated OrderNumber in your subcollection document
                         });
-            
-                        // Display a success message
-                        console.log(`Selected value "${selectedValue}" has been stored in Firestore`);
-                        alert(`Your document "${selectedValue}" is ordered. Check dashboard for status`);
-                    } else {
-                        // User is not logged in, handle accordingly
-                        alert('Please log in to place your order.');
-                    }
-                } catch (error) {
-                    // Handle any errors
-                    console.error(error);
-                    alert('Error storing selected value in Firestore.');
+                    });
+        
+                    // Display a success message
+                    console.log(`Selected value "${selectedValue}" has been stored in Firestore`);
+                    alert(`Your document "${selectedValue}" is ordered. Check the dashboard for status`);
+                } else {
+                    // User is not logged in, handle accordingly
+                    alert('Please log in to place your order.');
                 }
+            } catch (error) {
+                // Handle any errors
+                console.error(error);
+                alert('Error storing selected value in Firestore.');
+            }
+        
+            // Hide the modal
+            hideModal();
+        });
+        
+
             
-                // Hide the modal
-                hideModal();
-            });
-            
-            // Event listener for the "No" button in the modal
-            document.getElementById('noButton').addEventListener('click', () => {
-                // Hide the modal without taking any action
-                hideModal();
-            });
 
 
 

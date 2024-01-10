@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <style>
+        #dropdown {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <form id="userForm">
-        <label for="club">club:</label>
-        <input type="text" id="club" name="name" required>
 
-        <label for="sports">sports:</label>
-        <input type="text[]" id="sports" required>
+    <p id="text">hi</p>
+    <div id="dropdown">hello</div>
 
-        <button type="button" id="addUserButton">Add User</button>
-
-    </form>
     <script type="module" src="delete.js"></script>
+    <script>
+        document.getElementById('text').addEventListener('click', toggleDropdown);
+
+        function toggleDropdown() {
+            var dropdown = document.getElementById('dropdown');
+            if (dropdown.style.display === 'none') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

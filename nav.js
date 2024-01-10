@@ -33,44 +33,84 @@ const db = getFirestore(app);
 const firstNameElement = document.getElementById('firstName');
 const navItemsContainer = document.getElementById('navItems');
 
+// Function to update the navigation items based on user authentication state
+const updateNavItems = async (user) => {
+    if (user) {
+      // User is logged in
+      navItemsContainer.innerHTML = `
+          <a href="#about">About Us</a>
+          <a href="newDashboard.html">Notifications</a>
+          <a href="/LandingPage.html">Dashboard</a>
+          <a href="" id="profileImage"><img src="personIcon.svg">  </a> 
+          <div class="logoutContainer">
+          <a id="userName"></a> 
+          <div id="dropdown">
+          <p id="signOutButton">Logout</p>
+          </div>
+          </div>
+          
+        
+      `;
+      const signOutButton = document.getElementById('dropdown');
+      signOutButton.addEventListener('click', userSignout);
+  
+      // Find the user document in Firestore
+      const querySnapshot = await getDocs(query(collection(db, 'userRecords'), where('userId', '==', user.uid)));
+  
+      if (!querySnapshot.empty) {
+        const userDocument = querySnapshot.docs[0].data();
+        const profileImage = document.getElementById('profileImage');
+        const userName = document.getElementById('userName');
+  
+        // Set the image src to the retrieved imageURL
+        if (userDocument.imageURL) {
+          profileImage.querySelector('img').src = userDocument.imageURL;
+        }
+  
+        // Log the full name to the console
+        const fullName = `${userDocument.name} ${userDocument.lastname} ${userDocument.middlename}`;
+        console.log('User Full Name:', fullName);
+  
+        // Display the full name in the 'userName' element
+        userName.textContent = fullName;
+      }
+    } else {
+      // User is logged out
+      navItemsContainer.innerHTML = `
+          <a href="#about">About Us</a>
+          <a href="/Index.html">Services</a>
+          <a href="/Index.html">Login</a>
+          <a href="/Index.html">Signup</a>
+          <a href="/Index.html">Admin</a>
+      `;
+    }
 
-                // Function to update the navigation items based on user authentication state
-            const updateNavItems = async (user) => {
-            if (user) {
-                // User is logged in
-                navItemsContainer.innerHTML = `
-                    <a href="#about">About Us</a>
-                    <a href="newDashboard.html">Dashboard</a>
-                    <a href="/LandingPage.html">Services</a>
-                    <a id="signOutButton">Sign Out</a>
-                    <a href="" id="profileImage"><img src="personIcon.svg">
-                    </a>
-                `;
-                const signOutButton = document.getElementById('signOutButton');
-                signOutButton.addEventListener('click', userSignout);
-               
-                // Find the user document in Firestore
-                const querySnapshot = await getDocs(query(collection(db, 'userRecords'), where('email', '==', user.email)));
-    
-                if (!querySnapshot.empty) {
-                    const userDocument = querySnapshot.docs[0].data();
-                    const profileImage = document.getElementById('profileImage');
-                     // Set the image src to the retrieved imageURL
-                    if (userDocument.imageURL) {
-                        profileImage.querySelector('img').src = userDocument.imageURL;
-                    }
-                }
-            } else {
-                // User is logged out
-                navItemsContainer.innerHTML = `
-                    <a href="#about">About Us</a>
-                    <a href="/Index.html">Services</a>
-                    <a href="/Index.html">Login</a>
-                    <a href="/Index.html">Signup</a>
-                    <a href="/Index.html">Admin</a>
-                `;
-            }
-        };
+
+  document.getElementById('userName').addEventListener('click', toggleDropdown);
+  function toggleDropdown() {
+    var dropdown = document.getElementById('dropdown');
+    if (dropdown.style.display === 'none') {
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+
+
+  };
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
 
         
         const userSignout =async() => {
