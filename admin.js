@@ -30,15 +30,16 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 
-
 const hasPendingStatus = async (historyCollectionRef) => {
-    const historyQuerySnapshot = await getDocs(historyCollectionRef);
-  
-    // Check if the "history" subcollection has any document with status = "pending"
-    return historyQuerySnapshot.docs.some((historyDoc) => {
-      return historyDoc.data().status === "pending";
-    });
-  };
+  const historyQuerySnapshot = await getDocs(historyCollectionRef);
+
+  // Check if the "history" subcollection has any document with status equal to "pending" or "denied-request"
+  return historyQuerySnapshot.docs.some((historyDoc) => {
+      const status = historyDoc.data().status;
+      return status === "pending";
+  });
+};
+
   
 
 // Function to check if a collection exists
@@ -76,7 +77,7 @@ const displayUserNames = async () => {
               historyQuerySnapshot.forEach((historyDoc) => {
                   const status = historyDoc.data().status;
 
-                  if (status !== 'ready for pickup' && status !== 'released') {
+                  if (status === 'pending') {
                       const value = historyDoc.data().value;
                       const orderNum = historyDoc.data().orderNumber;
                       const reqDate = historyDoc.data().timestamp.toDate(); // Convert timestamp to Date object
@@ -136,9 +137,10 @@ const displayUserNames = async () => {
                     yesButton.addEventListener('click', async () => {
                         try {
                             const selectedStatus = setStatusSelect.value;
+                            const selectedClaimDate = setClaimDateInput.value; // Get the selected date
                 
-                            // Update the 'status' field in Firestore for the current subcollection document
-                            await updateDoc(historyDoc.ref, { status: selectedStatus });
+                            // Update the 'status' and 'claimDate' fields in Firestore for the current subcollection document
+                            await updateDoc(historyDoc.ref, { status: selectedStatus, claimDate: selectedClaimDate });
                             console.log('Status updated:', selectedStatus);
                 
                             // Retrieve the latest data after updating the document
@@ -147,14 +149,14 @@ const displayUserNames = async () => {
                             if (updatedHistoryDoc.exists()) {
                                 const sts = updatedHistoryDoc.data().status;
                                 const updatedOrderNum = updatedHistoryDoc.data().orderNumber;
+                                const updatedClaimDate = updatedHistoryDoc.data().claimDate;
                 
                                 // Log the updated values
                                 console.log('Updated value:', sts);
                                 console.log('Updated orderNum:', updatedOrderNum);
+                                console.log('Updated claimDate:', updatedClaimDate);
                 
                                 alert('Status updated:', selectedStatus);
-                               
-                           displayUserNames();
                                 hideModal();
                             } else {
                                 console.log('Updated document not found.');
@@ -163,8 +165,10 @@ const displayUserNames = async () => {
                             console.error('Error updating status:', error);
                             // Handle the error as needed
                         }
+                        location.reload(); // Refresh the displayed data after updating
                     });
                 });
+                
                   
                   setStatusCell.appendChild(setStatusSelect);
                   setStatusCell.appendChild(checkSymbolSpan);
