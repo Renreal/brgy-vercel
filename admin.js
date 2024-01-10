@@ -47,222 +47,192 @@ const collectionExists = async (collectionRef) => {
   return !snapshot.empty;
 };
 
-  // Function to get user names and update the HTML
-  const displayUserNames = async () => {
-    try {
+
+const displayUserNames = async () => {
+  try {
       // Query the "userRecords" collection
       const userRecordsCollection = collection(db, 'userRecords');
       const querySnapshot = await getDocs(userRecordsCollection);
 
-
-      // Get the container
-      const userNamesContainer = document.getElementById('userNamesContainer');
+      // Get the table
+      const table = document.getElementById('table1').getElementsByTagName('tbody')[0];
 
       // Clear previous content
-      userNamesContainer.innerHTML = '';
+      table.innerHTML = '';
 
-      // Loop through the documents and display names with check and info icons
+      // Loop through the documents and display rows in the table
       querySnapshot.forEach(async (doc) => {
-            
-        const historyID = doc.data().userId;
+          const historyID = doc.data().userId;
           // Check if the "history" subcollection exists
-         const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
+          const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
           const hasPending = await hasPendingStatus(historyCollectionRef);
           if (hasPending) {
-            const userData = doc.data();
-            const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-            const uid = doc.id;
-        
-            // Create a container div for each user
-            const userContainer = document.createElement('div');
-            userContainer.classList.add('order-container');
-            const iconsContainer = document.createElement('div');
-            iconsContainer.classList.add('icons');
-        
-            // Create a div for user name and append to the user container
-            const userNameDiv = document.createElement('div');
-            userNameDiv.classList.add('type');
-            userNameDiv.textContent = userName;
-            userNameDiv.classList.add('action');
-            userContainer.appendChild(userNameDiv);
-        
-            // Create a check icon and append to the iconscontainer div
-            const checkIcon = document.createElement('p');
-            checkIcon.id = `check_${uid}`;
-            checkIcon.innerHTML = '&#9989;';
-            checkIcon.classList.add('check-icon'); // Add a class for easier identification
-            checkIcon.addEventListener('click', () => {
-              showModal();
-            });
-            iconsContainer.appendChild(checkIcon);
-        
+              const userData = doc.data();
+              const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+
+              // Fetch the data from the subcollection
+              const historyQuerySnapshot = await getDocs(historyCollectionRef);
+
+              // Loop through the subcollection documents and append 'value' fields with 'status' equal to 'pending'
+              historyQuerySnapshot.forEach((historyDoc) => {
+                  const status = historyDoc.data().status;
+
+                  if (status !== 'ready for pickup' && status !== 'released') {
+                      const value = historyDoc.data().value;
+                      const orderNum = historyDoc.data().orderNumber;
+                      const reqDate = historyDoc.data().timestamp.toDate(); // Convert timestamp to Date object
+                      const formattedReqDate = reqDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                      // Create a new row for each 'value'
+                      const newRow = table.insertRow();
+
+                      // Insert cells into the row
+                      const orderNoCell = newRow.insertCell(0);
+                      const nameCell = newRow.insertCell(1);
+                      const typeCell = newRow.insertCell(2);
+                      const dateRequestedCell = newRow.insertCell(3);
+                      const setClaimDateCell = newRow.insertCell(4);
+                      const setStatusCell = newRow.insertCell(5);
+
+                      // Set the cell content
+                      orderNoCell.textContent = orderNum; // Set the orderNumber in a separate row
+                      nameCell.textContent = userName;
+                      typeCell.textContent = value; // Set the 'value' in a separate row
+                      dateRequestedCell.textContent = formattedReqDate; // Set the formatted date
+                      // Set the formatted date
+
+                      // Create a span for the check symbol
+                      const checkSymbolSpan = document.createElement('span');
+                      checkSymbolSpan.innerHTML = '&#9989;';
+
+
+                      // Create an input element with type="date" for the setClaimDateCell
+                      const setClaimDateInput = document.createElement('input');
+                      setClaimDateInput.type = 'date';
+                      setClaimDateInput.addEventListener('change', (event) => {
+                          // Handle the selected date change if needed
+                          console.log('Selected date:', event.target.value);
+                      });
+                      setClaimDateCell.appendChild(setClaimDateInput);
+
+                                // Create a dropdown (select) element for setStatusCell
+                  const setStatusSelect = document.createElement('select');
+                  setStatusSelect.addEventListener('change', (event) => {
+                      // Handle the selected status change if needed
+                      console.log('Selected status:', event.target.value);
+                        });
+                  // Add options for each status
+                  ['pending', 'ready for pickup', 'denied-request', 'released'].forEach((statusOption) => {
+                    const option = document.createElement('option');
+                    option.value = statusOption;
+                    option.textContent = statusOption;
+                    setStatusSelect.appendChild(option);
+                  });
+                  
+
+                            // Add click event listener to check icon
+                  checkSymbolSpan.addEventListener('click', async () => {
+                    const selectedStatus = setStatusSelect.value;
+                    showModal();
+
+                    const yesButton = document.getElementById('yes');
+                    yesButton.addEventListener('click', async () => {
+                      try {
+                        // Update the 'status' field in Firestore for the current subcollection document
+                        await updateDoc(historyDoc.ref, { status: selectedStatus });
+                        console.log('Status updated:', selectedStatus);
+                        hideModal();
+                    } catch (error) {
+                        console.error('Error updating status:', error);
+                        // Handle the error as needed
+                    }    
+                    });
 
 
 
-        // Create an info icon and append to the iconscontainer div
-        const infoIcon = document.createElement('p');
-        infoIcon.id = `info_${uid}`;
-        infoIcon.innerHTML = '&#9432';
+                    
+                });
+                  
+                  setStatusCell.appendChild(setStatusSelect);
+                  setStatusCell.appendChild(checkSymbolSpan);
+                            // Add an event listener to orderNoCell to capture the clicked orderNum
+                           
+                            orderNoCell.addEventListener('click', async () => {
+                              try {
+                                    const userDoc = await getDoc(doc.ref);
 
-        
-      //info icon event listener
-        infoIcon.addEventListener('click', async () => {
-          showinfoModal();
-          try {
-            // Query the document for the clicked user
-            const userDoc = await getDoc(doc.ref);
-            // Check if the document exists
-            if (userDoc.exists()) {
-              // Log the user data to the console
-              console.log('User Data:', userDoc.data());
+                                    if (userDoc.exists()) {
+                                      const userData = userDoc.data();
+                                      console.log('User Data:', userDoc.data());
 
-              const userAge = userDoc.data().age;
-              const nationality = userDoc.data().Nationality;
-              const address = userDoc.data().address;
-              const bplace = userDoc.data().birth_place;
-              const bday = userDoc.data().birthday;
-              const contact = userDoc.data().contactNum;
-              const email = userDoc.data().email;
-              const gender = userDoc.data().gender;
-              const status = userDoc.data().status;
-              const occupation = userDoc.data().work;
-              const historyID = userDoc.data().userId;
-              const imageURL = userDoc.data().imageURL; 
+                                      // Log the clicked orderNum and user data to the console
+                                      console.log('Clicked orderNum:', orderNum);
+                                      console.log('User Data:', userData);
 
-              document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-              document.getElementById('nationality').textContent = ` ${nationality}`;
-              document.getElementById('address').textContent = ` ${address}`;
-              document.getElementById('userAge').textContent = `Age: ${userAge}`;
-              document.getElementById('bplace').textContent = `Birthplace : ${bplace}`;
-              document.getElementById('bday').textContent = `bday: ${bday}`;
-              document.getElementById('contact').textContent = `contact: ${contact}`;
-              document.getElementById('Uemail').textContent = `email: ${email}`;
-              document.getElementById('Ugender').textContent = `gender: ${gender}`;
-              document.getElementById('status').textContent = `status: ${status}`;
-              document.getElementById('occupation').textContent = `work: ${occupation}`;
+                                      // Show the info modal with user data
+                                      showinfoModal();
 
-              // Update image source
-              const imageElement = document.querySelector('.image img');
-              imageElement.src = imageURL;
-            
+                                      // Populate the modal with user information
+                                      document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+                                      document.getElementById('nationality').textContent =`${userData.Nationality}`;
+                                      document.getElementById('address').textContent = ` ${userData.address}`;
+                                      document.getElementById('userAge').textContent = `Age: ${userData.age}`;
+                                      document.getElementById('bplace').textContent = `Birthplace: ${userData.birth_place}`;
+                                      document.getElementById('bday').textContent = `Birthday: ${userData.birthday}`;
+                                      document.getElementById('contact').textContent = `Contact Number: ${userData.contactNum}`;
+                                      document.getElementById('Uemail').textContent = `Email: ${userData.email}`;
+                                      document.getElementById('Ugender').textContent = `Gender: ${userData.gender}`;
+                                      document.getElementById('status').textContent = `Status: ${userData.status}`;
+                                      document.getElementById('occupation').textContent = `Work: ${userData.work}`;
+                                  } else {
+                                      console.log('User document not found.');
+                                  }
+                              } catch (error) {
+                                  console.error('Error retrieving user data:', error);
+                                  // Handle the error as needed
+                              }
+                            });
+
+                            // ...
+
+                  }
+              });
+          }
+      });
+  } catch (error) {
+      console.error('Error displaying user names:', error);
+  }
+};
+
+// Call the function to display user names
+displayUserNames();
 
 
 
-              const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
-              // Check if the "history" subcollection exists
-              const historyCollectionExists = await collectionExists(historyCollectionRef);
-      
-              if (historyCollectionExists) {
-                const historyQuerySnapshot = await getDocs(historyCollectionRef);
+
+
+
 
                 
-                // Create an array to store history values
-                const historyValues = [];
-
-          // Display the data from the "history" subcollection for the specific user
-                historyQuerySnapshot.forEach((historyDoc) => {
-                  const hstatus = historyDoc.data().status;
-                  const tstamp = historyDoc.data().timestamp;
-                  const val = historyDoc.data().value;
-
-                  if (hstatus === "pending") {
-                    // Get the document reference
-                    const docRef = historyDoc.ref;
-
-                    // Push values to the array along with docRef
-                    historyValues.push({ hstatus, tstamp, val, docRef });
-
-                    console.log('History Data:', hstatus, 'timestamp: ', tstamp, ' doc: ', val);
-                  }
-                });
-
-              
-            // Display the values outside the loop
-          
-          if (historyValues.length > 0) {
-            const lastHistory = historyValues[historyValues.length - 1];
-            document.getElementById('request-status').textContent = `Request Status: ${lastHistory.hstatus}`;
-
-            const docuRequestContainer = document.getElementById('doc-request');
-            // Clear previous content
-            docuRequestContainer.innerHTML = '';
-
-            // Display all values that status is = pending
-            historyValues.forEach((history) => {
-              const reqVal = document.createElement('p');
-              reqVal.textContent =  `docu-request : ${history.val}`;
-              docuRequestContainer.appendChild(reqVal);
-          });
-            
-          
-          // Add event listener for the "yes" button
-            const yesButton = document.getElementById('yes');
-            yesButton.addEventListener('click', async () => {
-              try {
-                // Update the hstatus in Firestore for the latest pending document
-                await updateDoc(lastHistory.docRef, { status: "ready for pickup" });
-                console.log('History status updated to "ready for pickup"');
-                hideModal();
-                location.reload();
-              } catch (error) {
-                console.error('Error updating history status:', error);
-                // Handle the error as needed
-              }
-            
-            });
-
-
-          }
-        } 
-        
-        else {
-                console.log('History subcollection does not exist for this user.');
-              }
-            } else {
-              console.log('User document not found.');
-            }
-          } catch (error) {
-            console.error('Error retrieving user data:', error);
-            // Handle the error as needed
-          }
-        });
-
-        iconsContainer.appendChild(infoIcon);
-        // Append to the userContainer
-        userContainer.appendChild(iconsContainer);
-        // Append the user container to the user names container
-        userNamesContainer.appendChild(userContainer);
-          } 
-    });
-    } catch (error) {
-      console.error('Error displaying user names:', error);
-    }
-  };
-
-  // Call the function to display user names
-  displayUserNames();
-
-  
-
-          //show modal when check icon is clicked
+              //show modal when check icon is clicked
               function showModal() {
                 document.getElementById('pop-up').style.display = 'block';   
-            }
+              }
 
-            // Function to hide the modal 
-            function hideModal() {
+              // Function to hide the modal 
+              function hideModal() {
                 document.getElementById('pop-up').style.display = 'none';
-            }
+              }
 
-            //cancel button
-            document.getElementById('cancel').addEventListener('click', () => {
+              //cancel button
+              document.getElementById('cancel').addEventListener('click', () => {
               hideModal();
-            });
+              });
 
 
      //info modal funtions
             function showinfoModal() {
-              document.getElementById('info-modal').style.display = 'block';   
+              document.getElementById('info-modal').style.display = 'flex';   
           }
           function hideinfoModal() {
               document.getElementById('info-modal').style.display = 'none';
