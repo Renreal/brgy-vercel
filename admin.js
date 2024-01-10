@@ -47,7 +47,6 @@ const collectionExists = async (collectionRef) => {
   return !snapshot.empty;
 };
 
-
 const displayUserNames = async () => {
   try {
       // Query the "userRecords" collection
@@ -130,27 +129,41 @@ const displayUserNames = async () => {
                   });
                   
 
-                            // Add click event listener to check icon
                   checkSymbolSpan.addEventListener('click', async () => {
-                    const selectedStatus = setStatusSelect.value;
                     showModal();
-
+                
                     const yesButton = document.getElementById('yes');
                     yesButton.addEventListener('click', async () => {
-                      try {
-                        // Update the 'status' field in Firestore for the current subcollection document
-                        await updateDoc(historyDoc.ref, { status: selectedStatus });
-                        console.log('Status updated:', selectedStatus);
-                        hideModal();
-                    } catch (error) {
-                        console.error('Error updating status:', error);
-                        // Handle the error as needed
-                    }    
+                        try {
+                            const selectedStatus = setStatusSelect.value;
+                
+                            // Update the 'status' field in Firestore for the current subcollection document
+                            await updateDoc(historyDoc.ref, { status: selectedStatus });
+                            console.log('Status updated:', selectedStatus);
+                
+                            // Retrieve the latest data after updating the document
+                            const updatedHistoryDoc = await getDoc(historyDoc.ref);
+                
+                            if (updatedHistoryDoc.exists()) {
+                                const sts = updatedHistoryDoc.data().status;
+                                const updatedOrderNum = updatedHistoryDoc.data().orderNumber;
+                
+                                // Log the updated values
+                                console.log('Updated value:', sts);
+                                console.log('Updated orderNum:', updatedOrderNum);
+                
+                                alert('Status updated:', selectedStatus);
+                               
+                           displayUserNames();
+                                hideModal();
+                            } else {
+                                console.log('Updated document not found.');
+                            }
+                        } catch (error) {
+                            console.error('Error updating status:', error);
+                            // Handle the error as needed
+                        }
                     });
-
-
-
-                    
                 });
                   
                   setStatusCell.appendChild(setStatusSelect);
@@ -192,8 +205,6 @@ const displayUserNames = async () => {
                                   // Handle the error as needed
                               }
                             });
-
-                            // ...
 
                   }
               });
