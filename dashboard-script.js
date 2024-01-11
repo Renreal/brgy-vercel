@@ -76,6 +76,7 @@ querySnap.forEach((doc) => {
  const value = data.value;
  const status = data.status;
  const cDate = data.claimDate;
+ const orderNum = data.orderNumber;
  console.log(cDate);
  
  // Create a new HTML element to display the formatted data
@@ -84,8 +85,10 @@ querySnap.forEach((doc) => {
  const satus = document.createElement('p');
  const divider = document.createElement('p');
  const claimDateElement = document.createElement('p');
+ const orderNumElement = document.createElement('p');
 
  dataElement.textContent = `Document: ${value}`;
+ orderNumElement.textContent =  `order number: ${orderNum}`;
  satus.textContent = `Status: ${status}`;
  date.textContent = `Date: ${timestamp.toLocaleString()}`;
  divider.textContent = `==============================`;
@@ -95,17 +98,20 @@ querySnap.forEach((doc) => {
  if (status === 'ready for pickup') {
   let totalAmount = 100; 
   const claim = document.createElement('p');
+  const sched = document.createElement('p');
   const amount = document.getElementById('amount');
   const claimDateElement = document.getElementById('Date'); // Add this line
 
   // Convert the claimDate string to a JavaScript Date object
   const claimDateObject = new Date(cDate);
 
-  // Display the claim date in the claimDate element
-  claimDateElement.textContent = `Claim Date: ${claimDateObject.toLocaleDateString('en-US')}`; 
+  /* // Display the claim date in the claimDate element
+  claimDateElement.textContent = `Claim Date: ${claimDateObject.toLocaleDateString('en-US')}`;  */
 
-  claim.textContent = `- ${value}`;
+  claim.textContent = `Document: ${value} -Order #: ${orderNum} `;
+  sched.textContent = `Claim Date: ${cDate}`;
   docValue.appendChild(claim);
+  docValue.appendChild(sched);
 
   amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
 }
@@ -114,6 +120,7 @@ querySnap.forEach((doc) => {
 
  // Append the new data element to the data-display div
  dataDisplay.appendChild(dataElement);
+ dataDisplay.appendChild(orderNumElement);
  dataDisplay.appendChild(satus);
  dataDisplay.appendChild(date);
  dataDisplay.appendChild(claimDateElement); 
