@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
 import { 
@@ -74,45 +75,48 @@ querySnap.forEach((doc) => {
  const timestamp = data.timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
  const value = data.value;
  const status = data.status;
+ const cDate = data.claimDate;
+ console.log(cDate);
+ 
  // Create a new HTML element to display the formatted data
  const dataElement = document.createElement('p');
  const date = document.createElement('p');
  const satus = document.createElement('p');
  const divider = document.createElement('p');
+ const claimDateElement = document.createElement('p');
 
  dataElement.textContent = `Document: ${value}`;
  satus.textContent = `Status: ${status}`;
  date.textContent = `Date: ${timestamp.toLocaleString()}`;
  divider.textContent = `==============================`;
 
-//display the all document that has a value of ready for pickup
- if (status === "ready for pickup"){
-     let totalAmount = 100; 
-     const claim = document.createElement('p');
-     const amount = document.getElementById('amount');
-     const claimDate = document.getElementById('Date');
-     const calendarInput = document.getElementById('calendar');
+ claimDateElement.textContent = `Claim Date: ${cDate}`;
 
-     
-     const currentDate = new Date();
-     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-     claimDate.textContent = `${currentDate.toLocaleDateString(undefined, options)}`;
-     
-    const isoDateString = currentDate.toISOString().split('T')[0];
-    calendarInput.value = isoDateString;
-    
-     claim.textContent = `- ${value}`;
-     docValue.appendChild(claim);
+ if (status === 'ready for pickup') {
+  let totalAmount = 100; 
+  const claim = document.createElement('p');
+  const amount = document.getElementById('amount');
+  const claimDateElement = document.getElementById('Date'); // Add this line
 
-     
-     amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
-    }
- 
+  // Convert the claimDate string to a JavaScript Date object
+  const claimDateObject = new Date(cDate);
+
+  // Display the claim date in the claimDate element
+  claimDateElement.textContent = `Claim Date: ${claimDateObject.toLocaleDateString('en-US')}`; 
+
+  claim.textContent = `- ${value}`;
+  docValue.appendChild(claim);
+
+  amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
+}
+
+
 
  // Append the new data element to the data-display div
  dataDisplay.appendChild(dataElement);
  dataDisplay.appendChild(satus);
  dataDisplay.appendChild(date);
+ dataDisplay.appendChild(claimDateElement); 
  dataDisplay.appendChild(divider);
  
 });

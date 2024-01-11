@@ -68,7 +68,7 @@ const updateNavItems = async (user) => {
         }
   
         // Log the full name to the console
-        const fullName = `${userDocument.name} ${userDocument.lastname} ${userDocument.middlename}`;
+        const fullName = `${userDocument.name} ${userDocument.middlename} ${userDocument.lastname}`;
         console.log('User Full Name:', fullName);
   
         // Display the full name in the 'userName' element
