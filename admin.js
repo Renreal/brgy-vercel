@@ -29,16 +29,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-
 const hasPendingStatus = async (historyCollectionRef) => {
   const historyQuerySnapshot = await getDocs(historyCollectionRef);
 
-  // Check if the "history" subcollection has any document with status equal to "pending" or "denied-request"
+  // Check if the "history" subcollection has any document with status equal to "pending" or "ready for pickup"
+  // and also has an "orderNumber" field
   return historyQuerySnapshot.docs.some((historyDoc) => {
-      const status = historyDoc.data().status;
-      return status === "pending";
+    const data = historyDoc.data();
+    const status = data.status;
+    const orderNumber = data.orderNumber;
+    return (status === "pending" || status === "ready for pickup") && orderNumber !== undefined;
   });
 };
+
 
   
 
@@ -76,13 +79,18 @@ const displayUserNames = async () => {
               // Loop through the subcollection documents and append 'value' fields with 'status' equal to 'pending'
               historyQuerySnapshot.forEach((historyDoc) => {
                   const status = historyDoc.data().status;
-
-                  if (status === 'pending') {
+                  const order = historyDoc.data().orderNumber;
+                  if (status === 'pending' || status === "ready for pickup" && order !== undefined) {
                       const value = historyDoc.data().value;
                       const orderNum = historyDoc.data().orderNumber;
+
+                       const docStatus = historyDoc.data().status;
+                        document.getElementById('docstats').textContent =`${docStatus}`;
+                                      
+                     
                       const reqDate = historyDoc.data().timestamp.toDate(); // Convert timestamp to Date object
                       const formattedReqDate = reqDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-
+                    
                       // Create a new row for each 'value'
                       const newRow = table.insertRow();
 
@@ -149,8 +157,7 @@ const displayUserNames = async () => {
                             if (updatedHistoryDoc.exists()) {
                                 const sts = updatedHistoryDoc.data().status;
                                 const updatedOrderNum = updatedHistoryDoc.data().orderNumber;
-                                const updatedClaimDate = updatedHistoryDoc.data().claimDate;
-                
+                                const updatedClaimDate = updatedHistoryDoc.data().claimDate;          
                                 // Log the updated values
                                 console.log('Updated value:', sts);
                                 console.log('Updated orderNum:', updatedOrderNum);
@@ -192,15 +199,16 @@ const displayUserNames = async () => {
                                       // Populate the modal with user information
                                       document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
                                       document.getElementById('nationality').textContent =`${userData.Nationality}`;
+                                
                                       document.getElementById('address').textContent = ` ${userData.address}`;
-                                      document.getElementById('userAge').textContent = `Age: ${userData.age}`;
-                                      document.getElementById('bplace').textContent = `Birthplace: ${userData.birth_place}`;
-                                      document.getElementById('bday').textContent = `Birthday: ${userData.birthday}`;
-                                      document.getElementById('contact').textContent = `Contact Number: ${userData.contactNum}`;
-                                      document.getElementById('Uemail').textContent = `Email: ${userData.email}`;
-                                      document.getElementById('Ugender').textContent = `Gender: ${userData.gender}`;
-                                      document.getElementById('status').textContent = `Status: ${userData.status}`;
-                                      document.getElementById('occupation').textContent = `Work: ${userData.work}`;
+                                      document.getElementById('userAge').textContent = ` ${userData.age}`;
+                                      document.getElementById('bplace').textContent = `${userData.birth_place}`;
+                                      document.getElementById('bday').textContent = `${userData.birthday}`;
+                                      document.getElementById('contact').textContent = ` ${userData.contactNum}`;
+                                      document.getElementById('Uemail').textContent = ` ${userData.email}`;
+                                      document.getElementById('Ugender').textContent = ` ${userData.gender}`;
+                                      document.getElementById('status').textContent = ` ${userData.status}`;
+                                      document.getElementById('occupation').textContent = ` ${userData.work}`;
                                   } else {
                                       console.log('User document not found.');
                                   }
