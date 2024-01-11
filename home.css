@@ -516,3 +516,8 @@ a img{
     margin-bottom: 5px;
     padding: 0.5rem;
 }
+.div{
+    
+    border-bottom: solid;
+    margin: 1rem;
+}

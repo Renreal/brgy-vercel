@@ -97,6 +97,8 @@ querySnap.forEach((doc) => {
 
  if (status === 'ready for pickup') {
   let totalAmount = 100; 
+  const divider = document.createElement('div');
+  divider.classList.add('div');
   const claim = document.createElement('p');
   const sched = document.createElement('p');
   const amount = document.getElementById('amount');
@@ -110,8 +112,10 @@ querySnap.forEach((doc) => {
 
   claim.textContent = `Document: ${value} -Order #: ${orderNum} `;
   sched.textContent = `Claim Date: ${cDate}`;
-  docValue.appendChild(claim);
-  docValue.appendChild(sched);
+  divider.appendChild(claim);
+  divider.appendChild(sched);
+
+  docValue.appendChild(divider);
 
   amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
 }
