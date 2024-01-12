@@ -232,8 +232,10 @@ const displayUserNames = async () => {
 
     if (!rowState.setClaimDateInput.value) {
         document.getElementById('pop-up').style.backgroundColor = 'red';
+        document.getElementById('info').textContent = 'You have not set a claim date';
     } else {
         document.getElementById('pop-up').style.backgroundColor = ''; // Reset to default color
+        document.getElementById('info').textContent = 'This action will notify the user about their document status';
     }
 }
        
