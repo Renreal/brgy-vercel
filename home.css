@@ -492,11 +492,17 @@ a img{
     cursor: pointer;
     margin-left: 1rem;
 }
+#table1 .status{
+    text-align: end;
+}
 
 #table1 th, #table1 td {
     border: 1px solid #000;
     border-color: black;
     padding: 7px;
+}
+.drop-down{
+    margin-left: 1rem;
 }
 .mainContainer{
     display: flex;

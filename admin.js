@@ -29,6 +29,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+const dateInputs = [];
+
 const hasPendingStatus = async (historyCollectionRef) => {
   const historyQuerySnapshot = await getDocs(historyCollectionRef);
 
@@ -50,6 +52,7 @@ const collectionExists = async (collectionRef) => {
   const snapshot = await getDocs(collectionRef);
   return !snapshot.empty;
 };
+const rowStates = [];
 
 const displayUserNames = async () => {
   try {
@@ -65,182 +68,176 @@ const displayUserNames = async () => {
 
       // Loop through the documents and display rows in the table
       querySnapshot.forEach(async (doc) => {
-          const historyID = doc.data().userId;
-          // Check if the "history" subcollection exists
-          const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
-          const hasPending = await hasPendingStatus(historyCollectionRef);
-          if (hasPending) {
-              const userData = doc.data();
-              const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-
-              // Fetch the data from the subcollection
-              const historyQuerySnapshot = await getDocs(historyCollectionRef);
-
-              // Loop through the subcollection documents and append 'value' fields with 'status' equal to 'pending'
-              historyQuerySnapshot.forEach((historyDoc) => {
-                  const status = historyDoc.data().status;
-                  const order = historyDoc.data().orderNumber;
-                  if (status === 'pending' || status === "ready for pickup" && order !== undefined) {
-                      const value = historyDoc.data().value;
-                      const orderNum = historyDoc.data().orderNumber;
-
-                       const docStatus = historyDoc.data().status;
-                        document.getElementById('docstats').textContent =`${docStatus}`;
-                                      
-                     
-                      const reqDate = historyDoc.data().timestamp.toDate(); // Convert timestamp to Date object
-                      const formattedReqDate = reqDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                    
-                      // Create a new row for each 'value'
-                      const newRow = table.insertRow();
-
-                      // Insert cells into the row
-                      const orderNoCell = newRow.insertCell(0);
-                      const nameCell = newRow.insertCell(1);
-                      const typeCell = newRow.insertCell(2);
-                      const dateRequestedCell = newRow.insertCell(3);
-                      const setClaimDateCell = newRow.insertCell(4);
-                      const setStatusCell = newRow.insertCell(5);
-
-                      // Set the cell content
-                      orderNoCell.textContent = orderNum; // Set the orderNumber in a separate row
-                      nameCell.textContent = userName;
-                      typeCell.textContent = value; // Set the 'value' in a separate row
-                      dateRequestedCell.textContent = formattedReqDate; // Set the formatted date
-                      // Set the formatted date
-
-                      // Create a span for the check symbol
-                      const checkSymbolSpan = document.createElement('span');
-                      checkSymbolSpan.innerHTML = '&#9989;';
-
-
-                      // Create an input element with type="date" for the setClaimDateCell
-                      const setClaimDateInput = document.createElement('input');
-                      setClaimDateInput.type = 'date';
-                      setClaimDateInput.addEventListener('change', (event) => {
-                          // Handle the selected date change if needed
-                          console.log('Selected date:', event.target.value);
-                      });
-                      setClaimDateCell.appendChild(setClaimDateInput);
-
-                                // Create a dropdown (select) element for setStatusCell
-                  const setStatusSelect = document.createElement('select');
-                  setStatusSelect.addEventListener('change', (event) => {
-                      // Handle the selected status change if needed
-                      console.log('Selected status:', event.target.value);
-                        });
-                  // Add options for each status
-                  ['pending', 'ready for pickup', 'denied-request', 'released'].forEach((statusOption) => {
-                    const option = document.createElement('option');
-                    option.value = statusOption;
-                    option.textContent = statusOption;
-                    setStatusSelect.appendChild(option);
-                  });
-                  
-
-                  checkSymbolSpan.addEventListener('click', async () => {
-                    showModal();
-                
-                    const yesButton = document.getElementById('yes');
-                    yesButton.addEventListener('click', async () => {
-                        try {
-                            const selectedStatus = setStatusSelect.value;
-                            const selectedClaimDate = setClaimDateInput.value; // Get the selected date
-                
-                            // Update the 'status' and 'claimDate' fields in Firestore for the current subcollection document
-                            await updateDoc(historyDoc.ref, { status: selectedStatus, claimDate: selectedClaimDate });
-                            console.log('Status updated:', selectedStatus);
-                
-                            // Retrieve the latest data after updating the document
-                            const updatedHistoryDoc = await getDoc(historyDoc.ref);
-                
-                            if (updatedHistoryDoc.exists()) {
-                                const sts = updatedHistoryDoc.data().status;
-                                const updatedOrderNum = updatedHistoryDoc.data().orderNumber;
-                                const updatedClaimDate = updatedHistoryDoc.data().claimDate;          
-                                // Log the updated values
-                                console.log('Updated value:', sts);
-                                console.log('Updated orderNum:', updatedOrderNum);
-                                console.log('Updated claimDate:', updatedClaimDate);
-                
-                                alert('Status updated:', selectedStatus);
-                                hideModal();
-                            } else {
-                                console.log('Updated document not found.');
-                            }
-                        } catch (error) {
-                            console.error('Error updating status:', error);
-                            // Handle the error as needed
-                        }
-                        location.reload(); // Refresh the displayed data after updating
-                    });
-                });
-                
-                  
-                  setStatusCell.appendChild(setStatusSelect);
-                  setStatusCell.appendChild(checkSymbolSpan);
-                            // Add an event listener to orderNoCell to capture the clicked orderNum
-                           
-                            orderNoCell.addEventListener('click', async () => {
-                              try {
-                                    const userDoc = await getDoc(doc.ref);
-
-                                    if (userDoc.exists()) {
-                                      const userData = userDoc.data();
-                                      console.log('User Data:', userDoc.data());
-
-                                      // Log the clicked orderNum and user data to the console
-                                      console.log('Clicked orderNum:', orderNum);
-                                      console.log('User Data:', userData);
-
-                                      // Show the info modal with user data
-                                      showinfoModal();
-
-                                      // Populate the modal with user information
-                                      document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-                                      document.getElementById('nationality').textContent =`${userData.Nationality}`;
-                                
-                                      document.getElementById('address').textContent = ` ${userData.address}`;
-                                      document.getElementById('userAge').textContent = ` ${userData.age}`;
-                                      document.getElementById('bplace').textContent = `${userData.birth_place}`;
-                                      document.getElementById('bday').textContent = `${userData.birthday}`;
-                                      document.getElementById('contact').textContent = ` ${userData.contactNum}`;
-                                      document.getElementById('Uemail').textContent = ` ${userData.email}`;
-                                      document.getElementById('Ugender').textContent = ` ${userData.gender}`;
-                                      document.getElementById('status').textContent = ` ${userData.status}`;
-                                      document.getElementById('occupation').textContent = ` ${userData.work}`;
-                                  } else {
-                                      console.log('User document not found.');
-                                  }
-                              } catch (error) {
-                                  console.error('Error retrieving user data:', error);
-                                  // Handle the error as needed
-                              }
-                            });
-
-                  }
+        const historyID = doc.data().userId;
+        const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
+        const hasPending = await hasPendingStatus(historyCollectionRef);
+  
+        if (hasPending) {
+          const userData = doc.data();
+          const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+  
+          const historyQuerySnapshot = await getDocs(historyCollectionRef);
+  
+          historyQuerySnapshot.forEach((historyDoc) => {
+            const status = historyDoc.data().status;
+            const order = historyDoc.data().orderNumber;
+  
+            if (status === 'pending' || status === "ready for pickup" && order !== undefined) {
+              const value = historyDoc.data().value;
+              const orderNum = historyDoc.data().orderNumber;
+  
+              const reqDate = historyDoc.data().timestamp.toDate();
+              const formattedReqDate = reqDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  
+              const newRow = table.insertRow();
+              const orderNoCell = newRow.insertCell(0);
+              const nameCell = newRow.insertCell(1);
+              const typeCell = newRow.insertCell(2);
+              const dateRequestedCell = newRow.insertCell(3);
+              const setClaimDateCell = newRow.insertCell(4);
+              const setStatusCell = newRow.insertCell(5);
+  
+              orderNoCell.textContent = orderNum;
+              nameCell.textContent = userName;
+              typeCell.textContent = value;
+              dateRequestedCell.textContent = formattedReqDate;
+  
+              const docStatus = historyDoc.data().status;
+              setStatusCell.textContent = docStatus;
+              setStatusCell.classList.add('status');
+  
+              const checkSymbolSpan = document.createElement('span');
+              checkSymbolSpan.innerHTML = '&#9989;';
+  
+              const setClaimDateInput = document.createElement('input');
+              setClaimDateInput.type = 'date';
+              setClaimDateInput.id = 'setClaimDateInput';
+              setClaimDateInput.addEventListener('change', (event) => {});
+  
+              dateInputs.push(setClaimDateInput);
+              setClaimDateCell.appendChild(setClaimDateInput);
+  
+              const setStatusSelect = document.createElement('select');
+              setStatusSelect.classList.add('drop-down');
+              setStatusSelect.addEventListener('change', (event) => {
+                console.log('Selected status:', event.target.value);
               });
-          }
+  
+              ['pending', 'ready for pickup', 'denied-request', 'released'].forEach((statusOption) => {
+                const option = document.createElement('option');
+                option.value = statusOption;
+                option.textContent = statusOption;
+                setStatusSelect.appendChild(option);
+              });
+  
+              checkSymbolSpan.addEventListener('click', async () => {
+                const index = dateInputs.indexOf(setClaimDateInput);
+                showModal(rowStates[index]);
+  
+                const yesButton = document.getElementById('yes');
+                yesButton.addEventListener('click', async () => {
+                  try {
+                    const selectedStatus = rowStates[index].setStatusSelect.value;
+                    const selectedClaimDate = rowStates[index].setClaimDateInput.value;
+  
+                    if (selectedClaimDate) {
+                      await updateDoc(historyDoc.ref, { status: selectedStatus, claimDate: selectedClaimDate });
+                      console.log('Status updated:', selectedStatus);
+  
+                      const updatedHistoryDoc = await getDoc(historyDoc.ref);
+  
+                      if (updatedHistoryDoc.exists()) {
+                        console.log('Updated value:', updatedHistoryDoc.data().status);
+                        console.log('Updated orderNum:', updatedHistoryDoc.data().orderNumber);
+                        console.log('Updated claimDate:', updatedHistoryDoc.data().claimDate);
+  
+                        alert('Status updated: ' + selectedStatus);
+                        location.reload();
+                      } else {
+                        console.log('Updated document not found.');
+                      }
+                    } else {
+                      alert('Please set a claim date before updating the status.');
+                    }
+                  } catch (error) {
+                    console.error('Error updating status:', error);
+                  } finally {
+                    hideModal();
+                  }
+                });
+              });
+  
+              setStatusCell.appendChild(setStatusSelect);
+              setStatusCell.appendChild(checkSymbolSpan);
+  
+              orderNoCell.addEventListener('click', async () => {
+                try {
+                  const userDoc = await getDoc(doc.ref);
+  
+                  if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('User Data:', userDoc.data());
+  
+                    console.log('Clicked orderNum:', orderNum);
+                    console.log('User Data:', userData);
+  
+                    showinfoModal();
+  
+                    document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+                    document.getElementById('nationality').textContent =`${userData.Nationality}`;
+                    document.getElementById('address').textContent = ` ${userData.address}`;
+                    document.getElementById('userAge').textContent = ` ${userData.age}`;
+                    document.getElementById('bplace').textContent = `${userData.birth_place}`;
+                    document.getElementById('bday').textContent = `${userData.birthday}`;
+                    document.getElementById('contact').textContent = ` ${userData.contactNum}`;
+                    document.getElementById('Uemail').textContent = ` ${userData.email}`;
+                    document.getElementById('Ugender').textContent = ` ${userData.gender}`;
+                    document.getElementById('status').textContent = ` ${userData.status}`;
+                    document.getElementById('occupation').textContent = ` ${userData.work}`;
+                  } else {
+                    console.log('User document not found.');
+                  }
+                } catch (error) {
+                  console.error('Error retrieving user data:', error);
+                }
+              });
+  
+              // Store the state for this row
+              const rowState = {
+                setClaimDateInput: setClaimDateInput,
+                setStatusSelect: setStatusSelect,
+              };
+  
+              rowStates.push(rowState);
+            }
+          });
+        }
       });
-  } catch (error) {
+    } catch (error) {
       console.error('Error displaying user names:', error);
-  }
-};
-
-// Call the function to display user names
-displayUserNames();
-
-
+    }
+  };
+  
+  // Call the function to display user names
+  displayUserNames();
 
 
 
 
 
-                
-              //show modal when check icon is clicked
-              function showModal() {
-                document.getElementById('pop-up').style.display = 'block';   
-              }
+
+
+  function showModal(rowState) {
+    document.getElementById('pop-up').style.display = 'block';
+
+    if (!rowState.setClaimDateInput.value) {
+        document.getElementById('pop-up').style.backgroundColor = 'red';
+    } else {
+        document.getElementById('pop-up').style.backgroundColor = ''; // Reset to default color
+    }
+}
+       
+
 
               // Function to hide the modal 
               function hideModal() {
