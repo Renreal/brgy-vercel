@@ -83,67 +83,84 @@
                           
                             return downloadURL;
                           };
+                         
 
-                    const userSignUp = async () => {
-                    try {
-                        const signUpEmail = userEmailSignUp.value;
-                        const signUpPassword = userPasswordSignUp.value;
-                        const firstName = document.querySelector("#firstname").value;
-                        const lastName = document.querySelector("#lastname").value;
-                        const midName = document.querySelector("#middleName").value;
-                        const Age = document.querySelector("#Age").value;
-                        const Gender = document.querySelector("#Gender").value;
-                        const bday = document.querySelector("#birthday").value;
-                        const birthPlace = document.querySelector("#birthPlace").value;
-                        const address = document.querySelector("#Address").value;
-                        const Nationality = document.querySelector("#nationality").value;
-                        const status = document.querySelector("#status").value;
-                        const Occupation = document.querySelector("#Occupation").value;
-                        const contact = document.querySelector("#Phone").value;
-// Create a user with email and password
-                        const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
+
+
+
+                          
+                          const userSignUp = async () => {
+                            try {
+                                const signUpEmail = userEmailSignUp.value;
+                                const signUpPassword = userPasswordSignUp.value;
+                                const firstName = document.querySelector("#firstname").value;
+                                const lastName = document.querySelector("#lastname").value;
+                                const midName = document.querySelector("#middleName").value;
+                                const Age = document.querySelector("#Age").value;
+                                const Gender = document.querySelector("#Gender").value;
+                                const bday = document.querySelector("#birthday").value;
+                                const birthPlace = document.querySelector("#birthPlace").value;
+                                const address = document.querySelector("#Address").value;
+                                const Nationality = document.querySelector("#nationality").value;
+                                const status = document.querySelector("#status").value;
+                                const Occupation = document.querySelector("#Occupation").value;
+                                const contact = document.querySelector("#Phone").value;
                         
-                        const user = userCredential.user;
-                        const userId = user.uid;
-
-    // Store user data in Firestore
-                        const file = fileInput.files[0];
-                        const imageURL = await uploadImageToStorage(file, userId);
-                       
-                        const userDocRef = await addDoc(collection(db, 'userRecords'), {
-                        email: signUpEmail,
-                        name: firstName,
-                        lastname: lastName,
-                        middlename: midName,
-                        age: Age,
-                        gender: Gender,
-                        birthday: bday,
-                        birth_place: birthPlace,
-                        address: address,
-                        Nationality: Nationality,
-                        status: status,
-                        work: Occupation,
-                        contactNum: contact,
-                        password: signUpPassword, 
-                        userId: userId,
-                        imageURL: imageURL,
-                        });
-                        alert("Registered Successfully!");
-                        location.replace("LandingPage.html");
-                    }
-                     catch (error) {
-                        // Handle the error
-                        const errorCode = error.code;
-                        const errorMessage = error.message;
-                        console.log(error);
-                        if (errorCode === "auth/email-already-in-use") {
-                        alert("This email address is already in use. Please choose a different email address.");
-                        } else {
-                        alert("Error: " + errorMessage);
-                        console.log(errorCode + errorMessage);
-                        }
-                    }
-                    };
+                                // Check if a file is selected
+                                const fileInput = document.getElementById("fileInput");
+                                const file = fileInput.files[0];
+                                
+                                if (!file) {
+                                    alert("Please select an image file.");
+                                    return;
+                                }
+                        
+                                // Create a user with email and password
+                                const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
+                        
+                                const user = userCredential.user;
+                                const userId = user.uid;
+                        
+                                // Store user data in Firestore
+                                const imageURL = await uploadImageToStorage(file, userId);
+                        
+                                const userDocRef = await addDoc(collection(db, 'userRecords'), {
+                                    email: signUpEmail,
+                                    name: firstName,
+                                    lastname: lastName,
+                                    middlename: midName,
+                                    age: Age,
+                                    gender: Gender,
+                                    birthday: bday,
+                                    birth_place: birthPlace,
+                                    address: address,
+                                    Nationality: Nationality,
+                                    status: status,
+                                    work: Occupation,
+                                    contactNum: contact,
+                                    password: signUpPassword, 
+                                    userId: userId,
+                                    imageURL: imageURL,
+                                });
+                        
+                                alert("Registered Successfully!");
+                                location.replace("LandingPage.html");
+                            } catch (error) {
+                                // Handle the error
+                                const errorCode = error.code;
+                                const errorMessage = error.message;
+                                console.log(error);
+                                if (errorCode === "auth/email-already-in-use") {
+                                    alert("This email address is already in use. Please choose a different email address.");
+                                } else {
+                                    alert("Error: " + errorMessage);
+                                    console.log(errorCode + errorMessage);
+                                }
+                            }
+                        };
+                        
+                        
+                        
 
 
 //=======user sign IN=============//
