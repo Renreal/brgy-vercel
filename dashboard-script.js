@@ -69,7 +69,7 @@ const querySnap = await getDocs(subcollectionRef);
 const dataDisplay = document.getElementById('data-display'); // Get the HTML element
 const docValue = document.getElementById('document-value');
 let totalClaims = 0;
-
+let hasReadyDocuments = false;
 querySnap.forEach((doc) => {
  const data = doc.data();
  const timestamp = data.timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
@@ -96,6 +96,7 @@ querySnap.forEach((doc) => {
  claimDateElement.textContent = `Claim Date: ${cDate}`;
 
  if (status === 'ready for pickup') {
+  hasReadyDocuments = true;
   let totalAmount = 100; 
   const divider = document.createElement('div');
   divider.classList.add('div');
@@ -107,8 +108,6 @@ querySnap.forEach((doc) => {
   // Convert the claimDate string to a JavaScript Date object
   const claimDateObject = new Date(cDate);
 
-  /* // Display the claim date in the claimDate element
-  claimDateElement.textContent = `Claim Date: ${claimDateObject.toLocaleDateString('en-US')}`;  */
 
   claim.textContent = `Document: ${value} -Order #: ${orderNum} `;
   sched.textContent = `Claim Date: ${cDate}`;
@@ -118,9 +117,7 @@ querySnap.forEach((doc) => {
   docValue.appendChild(divider);
 
   amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
-}
-
-
+} 
 
  // Append the new data element to the data-display div
  dataDisplay.appendChild(dataElement);
@@ -132,7 +129,11 @@ querySnap.forEach((doc) => {
  
 });
 
-                   
+if (!hasReadyDocuments) {
+  const text = document.createElement('p');
+  text.textContent = 'You have no document ready to pick-up as of the moment';
+  docValue.appendChild(text);
+}                  
 
  
 
