@@ -361,8 +361,8 @@ a img{
     justify-content: flex-start;
 }
 .searchBar input{
- 
-  padding: 0.3rem;
+    padding: 0.3rem;
+    width: 24vw;
 }
 .order-container {
     display: flex;

@@ -87,19 +87,25 @@ document.getElementById('save').addEventListener('click', async () => {
   }
 });
 
-
-
-// Add a new function to handle filtering based on order number
-const filterByOrderNumber = (orderNumber) => {
+// Add a new function to handle filtering based on order number and name
+const filterByNameAndOrderNumber = (searchTerm) => {
   const table = document.getElementById('table1').getElementsByTagName('tbody')[0];
   const rows = table.getElementsByTagName('tr');
 
   for (let i = 0; i < rows.length; i++) {
     const orderNoCell = rows[i].getElementsByTagName('td')[0];
-    if (orderNoCell) {
+    const nameCell = rows[i].getElementsByTagName('td')[1];
+
+    if (orderNoCell && nameCell) {
       const orderNoText = orderNoCell.textContent || orderNoCell.innerText;
-      // Hide or show rows based on the search input
-      rows[i].style.display = orderNoText.includes(orderNumber) ? '' : 'none';
+      const nameText = nameCell.textContent || nameCell.innerText;
+
+      // Convert text content to lowercase for case-insensitive search
+      const orderNoLowerCase = orderNoText.toLowerCase();
+      const nameLowerCase = nameText.toLowerCase();
+
+      // Hide or show rows based on the case-insensitive search input
+      rows[i].style.display = orderNoLowerCase.includes(searchTerm) || nameLowerCase.includes(searchTerm) ? '' : 'none';
     }
   }
 };
@@ -120,192 +126,211 @@ const displayUserNames = async () => {
     const searchInput = document.getElementById('orderNumberSearch');
     // Add an input event listener to the search input
     searchInput.addEventListener('input', (event) => {
-      const searchTerm = event.target.value.trim();
-      filterByOrderNumber(searchTerm);
+      const searchTerm = event.target.value.trim().toLowerCase(); // Convert search term to lowercase
+      filterByNameAndOrderNumber(searchTerm);
     });
 
-    // Loop through the documents and display rows in the table
-    querySnapshot.forEach(async (doc) => {
-      const historyID = doc.data().userId;
-      const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
-      const hasPending = await hasPendingStatus(historyCollectionRef);
+  
+const allRows = [];
 
-      if (hasPending) {
-        const userData = doc.data();
-        const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+// Loop through the documents and display rows in the table
+querySnapshot.forEach(async (doc) => {
+  const historyID = doc.data().userId;
+  const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
+  const hasPending = await hasPendingStatus(historyCollectionRef);
 
-        const historyQuerySnapshot = await getDocs(historyCollectionRef);
+  if (hasPending) {
+    const userData = doc.data();
+    const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
 
-        // Get all history documents and group them by value
-        const groupedHistory = {};
-        historyQuerySnapshot.forEach((historyDoc) => {
+    const historyQuerySnapshot = await getDocs(historyCollectionRef);
+
+    // Get all history documents and group them by value
+    const groupedHistory = {};
+    historyQuerySnapshot.forEach((historyDoc) => {
+      const value = historyDoc.data().timestamp;
+      if (!groupedHistory[value]) {
+        groupedHistory[value] = [];
+      }
+      groupedHistory[value].push(historyDoc);
+    });
+
+    // Iterate over each group and sort by timestamp in descending order
+    for (const value in groupedHistory) {
+      groupedHistory[value].sort((a, b) =>
+        b.data().timestamp.toMillis() - a.data().timestamp.toMillis()
+      );
+
+      // Iterate over each group and display the rows in the table
+      groupedHistory[value].forEach((historyDoc) => {
+        const status = historyDoc.data().status;
+        const order = historyDoc.data().orderNumber;
+
+        if (order !== undefined) {
           const value = historyDoc.data().value;
-          if (!groupedHistory[value]) {
-            groupedHistory[value] = [];
-          }
-          groupedHistory[value].push(historyDoc);
-        });
+          const orderNum = historyDoc.data().orderNumber;
 
-        // Iterate over each group and sort by timestamp in descending order
-        for (const value in groupedHistory) {
-          groupedHistory[value].sort((a, b) =>
-            b.data().timestamp.toMillis() - a.data().timestamp.toMillis()
+          const reqDate = historyDoc.data().timestamp.toDate();
+          const formattedReqDate = reqDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+
+          const newRow = table.insertRow();
+          const orderNoCell = newRow.insertCell(0);
+          const nameCell = newRow.insertCell(1);
+          const typeCell = newRow.insertCell(2);
+          const dateRequestedCell = newRow.insertCell(3);
+          const setClaimDateCell = newRow.insertCell(4);
+          const setStatusCell = newRow.insertCell(5);
+
+          orderNoCell.textContent = orderNum;
+          nameCell.textContent = userName;
+          typeCell.textContent = value;
+          dateRequestedCell.textContent = formattedReqDate;
+
+          const docStatus = historyDoc.data().status;
+          setStatusCell.textContent = docStatus;
+          setStatusCell.classList.add('status');
+
+          const checkSymbolSpan = document.createElement('span');
+          checkSymbolSpan.innerHTML = '&#9989;';
+
+          const setClaimDateInput = document.createElement('input');
+          setClaimDateInput.type = 'date';
+          setClaimDateInput.id = 'setClaimDateInput';
+          setClaimDateInput.addEventListener('change', (event) => {
+            // Handle change event
+          });
+
+          dateInputs.push(setClaimDateInput);
+          setClaimDateCell.appendChild(setClaimDateInput);
+
+          const setStatusSelect = document.createElement('select');
+          setStatusSelect.classList.add('drop-down');
+          setStatusSelect.addEventListener('change', (event) => {
+            console.log('Selected status:', event.target.value);
+          });
+
+          ['pending', 'ready for pickup', 'denied-request', 'released'].forEach(
+            (statusOption) => {
+              const option = document.createElement('option');
+              option.value = statusOption;
+              option.textContent = statusOption;
+              setStatusSelect.appendChild(option);
+            }
           );
-        }
 
-        // Iterate over each group and display the rows in the table
-        for (const value in groupedHistory) {
-          groupedHistory[value].forEach((historyDoc) => {
-            const status = historyDoc.data().status;
-            const order = historyDoc.data().orderNumber;
+          checkSymbolSpan.addEventListener('click', async () => {
+            const index = dateInputs.indexOf(setClaimDateInput);
+            const selectedStatus = rowStates[index].setStatusSelect.value;
 
-            if (order !== undefined) {
-              const value = historyDoc.data().value;
-              const orderNum = historyDoc.data().orderNumber;
+            if (selectedStatus === 'denied-request') {
+              showTextArea();
+            } else {
+              showModal(rowStates[index]);
+            }
+            currentHistoryDoc = historyDoc;
 
-              const reqDate = historyDoc.data().timestamp.toDate();
-              const formattedReqDate = reqDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              });
+            const yesButton = document.getElementById('yes');
+            yesButton.addEventListener('click', async () => {
+              try {
+                const selectedClaimDate = rowStates[index].setClaimDateInput.value;
 
-              const newRow = table.insertRow();
-              const orderNoCell = newRow.insertCell(0);
-              const nameCell = newRow.insertCell(1);
-              const typeCell = newRow.insertCell(2);
-              const dateRequestedCell = newRow.insertCell(3);
-              const setClaimDateCell = newRow.insertCell(4);
-              const setStatusCell = newRow.insertCell(5);
+                if (selectedClaimDate) {
+                  await updateDoc(historyDoc.ref, {
+                    status: selectedStatus,
+                    claimDate: selectedClaimDate,
+                  });
+                  console.log('Status updated:', selectedStatus);
 
-              orderNoCell.textContent = orderNum;
-              nameCell.textContent = userName;
-              typeCell.textContent = value;
-              dateRequestedCell.textContent = formattedReqDate;
+                  const updatedHistoryDoc = await getDoc(historyDoc.ref);
 
-              const docStatus = historyDoc.data().status;
-              setStatusCell.textContent = docStatus;
-              setStatusCell.classList.add('status');
+                  if (updatedHistoryDoc.exists()) {
+                    console.log('Updated value:', updatedHistoryDoc.data().status);
+                    console.log('Updated orderNum:', updatedHistoryDoc.data().orderNumber);
+                    console.log('Updated claimDate:', updatedHistoryDoc.data().claimDate);
 
-              const checkSymbolSpan = document.createElement('span');
-              checkSymbolSpan.innerHTML = '&#9989;';
-
-              const setClaimDateInput = document.createElement('input');
-              setClaimDateInput.type = 'date';
-              setClaimDateInput.id = 'setClaimDateInput';
-              setClaimDateInput.addEventListener('change', (event) => {});
-
-              dateInputs.push(setClaimDateInput);
-              setClaimDateCell.appendChild(setClaimDateInput);
-
-              const setStatusSelect = document.createElement('select');
-              setStatusSelect.classList.add('drop-down');
-              setStatusSelect.addEventListener('change', (event) => {
-                console.log('Selected status:', event.target.value);
-              });
-
-              ['pending', 'ready for pickup', 'denied-request', 'released'].forEach(
-                (statusOption) => {
-                  const option = document.createElement('option');
-                  option.value = statusOption;
-                  option.textContent = statusOption;
-                  setStatusSelect.appendChild(option);
-                }
-              );
-
-              checkSymbolSpan.addEventListener('click', async () => {
-                const index = dateInputs.indexOf(setClaimDateInput);
-                const selectedStatus = rowStates[index].setStatusSelect.value;
-
-                if (selectedStatus === 'denied-request') {
-                  showTextArea();
-                } else {
-                  showModal(rowStates[index]);
-                }
-                currentHistoryDoc = historyDoc;
-
-                const yesButton = document.getElementById('yes');
-                yesButton.addEventListener('click', async () => {
-                  try {
-                    const selectedClaimDate = rowStates[index].setClaimDateInput.value;
-
-                    if (selectedClaimDate) {
-                      await updateDoc(historyDoc.ref, {
-                        status: selectedStatus,
-                        claimDate: selectedClaimDate,
-                      });
-                      console.log('Status updated:', selectedStatus);
-
-                      const updatedHistoryDoc = await getDoc(historyDoc.ref);
-
-                      if (updatedHistoryDoc.exists()) {
-                        console.log('Updated value:', updatedHistoryDoc.data().status);
-                        console.log('Updated orderNum:', updatedHistoryDoc.data().orderNumber);
-                        console.log('Updated claimDate:', updatedHistoryDoc.data().claimDate);
-
-                        alert('Status updated: ' + selectedStatus);
-                        location.reload();
-                      } else {
-                        console.log('Updated document not found.');
-                      }
-                    } else {
-                      alert('Please set a claim date before updating the status.');
-                    }
-                  } catch (error) {
-                    console.error('Error updating status:', error);
-                  } finally {
-                    hideModal();
-                  }
-                });
-              });
-
-              setStatusCell.appendChild(setStatusSelect);
-              setStatusCell.appendChild(checkSymbolSpan);
-
-              orderNoCell.addEventListener('click', async () => {
-                try {
-                  const userDoc = await getDoc(doc.ref);
-
-                  if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    console.log('User Data:', userDoc.data());
-
-                    console.log('Clicked orderNum:', orderNum);
-                    console.log('User Data:', userData);
-
-                    showinfoModal();
-
-                    document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-                    document.getElementById('nationality').textContent = `${userData.Nationality}`;
-                    document.getElementById('address').textContent = ` ${userData.address}`;
-                    document.getElementById('userAge').textContent = ` ${userData.age}`;
-                    document.getElementById('bplace').textContent = `${userData.birth_place}`;
-                    document.getElementById('bday').textContent = `${userData.birthday}`;
-                    document.getElementById('contact').textContent = ` ${userData.contactNum}`;
-                    document.getElementById('Uemail').textContent = ` ${userData.email}`;
-                    document.getElementById('Ugender').textContent = ` ${userData.gender}`;
-                    document.getElementById('status').textContent = ` ${userData.status}`;
-                    document.getElementById('occupation').textContent = ` ${userData.work}`;
+                    alert('Status updated: ' + selectedStatus);
+                    location.reload();
                   } else {
-                    console.log('User document not found.');
+                    console.log('Updated document not found.');
                   }
-                } catch (error) {
-                  console.error('Error retrieving user data:', error);
+                } else {
+                  alert('Please set a claim date before updating the status.');
                 }
-              });
+              } catch (error) {
+                console.error('Error updating status:', error);
+              } finally {
+                hideModal();
+              }
+            });
+          });
 
-              // Store the state for this row
-              const rowState = {
-                setClaimDateInput: setClaimDateInput,
-                setStatusSelect: setStatusSelect,
-              };
+          setStatusCell.appendChild(setStatusSelect);
+          setStatusCell.appendChild(checkSymbolSpan);
 
-              rowStates.push(rowState);
+          orderNoCell.addEventListener('click', async () => {
+            try {
+              const userDoc = await getDoc(doc.ref);
+
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log('User Data:', userDoc.data());
+
+                console.log('Clicked orderNum:', orderNum);
+                console.log('User Data:', userData);
+
+                showinfoModal();
+
+                document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+                document.getElementById('nationality').textContent = `${userData.Nationality}`;
+                document.getElementById('address').textContent = ` ${userData.address}`;
+                document.getElementById('userAge').textContent = ` ${userData.age}`;
+                document.getElementById('bplace').textContent = `${userData.birth_place}`;
+                document.getElementById('bday').textContent = `${userData.birthday}`;
+                document.getElementById('contact').textContent = ` ${userData.contactNum}`;
+                document.getElementById('Uemail').textContent = ` ${userData.email}`;
+                document.getElementById('Ugender').textContent = ` ${userData.gender}`;
+                document.getElementById('status').textContent = ` ${userData.status}`;
+                document.getElementById('occupation').textContent = ` ${userData.work}`;
+              } else {
+                console.log('User document not found.');
+              }
+            } catch (error) {
+              console.error('Error retrieving user data:', error);
             }
           });
+
+          // Store the state for this row
+          const rowState = {
+            setClaimDateInput: setClaimDateInput,
+            setStatusSelect: setStatusSelect,
+          };
+
+          rowStates.push(rowState);
+          allRows.push(newRow); // Store the row in the array
         }
-      }
-    });
+      });
+    }
+  }
+});
+
+allRows.sort((rowA, rowB) => {
+  const timestampA = rowA.cells[3].textContent; // Assuming the timestamp is in the 4th cell (index 3)
+  const timestampB = rowB.cells[3].textContent;
+
+  // Compare timestamps within the same value group
+  return new Date(timestampB) - new Date(timestampA);
+});
+
+// Clear the table content
+table.innerHTML = '';
+allRows.forEach((row) => {
+  table.appendChild(row);
+});
+
   } catch (error) {
     console.error('Error displaying user names:', error);
   }
@@ -313,6 +338,7 @@ const displayUserNames = async () => {
 
 // Call the function to display user names
 displayUserNames();
+
 
 
 
