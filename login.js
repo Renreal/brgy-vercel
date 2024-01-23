@@ -105,7 +105,7 @@
                                 const status = document.querySelector("#status").value;
                                 const Occupation = document.querySelector("#Occupation").value;
                                 const contact = document.querySelector("#Phone").value;
-                        
+                                
                                 // Check if a file is selected
                                 const fileInput = document.getElementById("fileInput");
                                 const file = fileInput.files[0];
@@ -114,7 +114,18 @@
                                     alert("Please select an image file.");
                                     return;
                                 }
-                        
+                                
+                                // Validate the birthday
+                                const currentYear = new Date().getFullYear();
+                                const selectedBirthday = new Date(bday);
+                                const selectedYear = selectedBirthday.getFullYear();
+
+                                if (selectedYear > currentYear) {
+                                    alert("Invalid birthday. Double check the year of birth.");
+                                    return;
+                                }
+
+
                                 // Create a user with email and password
                                 const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
                         

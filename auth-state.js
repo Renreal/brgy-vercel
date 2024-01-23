@@ -90,7 +90,7 @@
 
         // Function to show the modal and overlay
                     function showModal() {
-                        document.getElementById('confirmationModal').style.display = 'block';
+                        document.getElementById('confirmationModal').style.display = 'flex';
                         document.getElementById('overlay').style.display = 'block';
                     }
 
@@ -120,37 +120,53 @@
             }
             window.updateOrder = updateOrder;
 
-          let increment = 1;
           
           
-          document.getElementById('yesButton').addEventListener('click', async () => {
+                
+                // Add a flag to track whether the data has been saved
+        let isDataSaved = false;
+
+        document.getElementById('yesButton').addEventListener('click', async () => {
             try {
+                // Check if the data has already been saved
+                if (isDataSaved) {
+                    console.log('Data has already been saved. Ignoring additional clicks.');
+                    return;
+                }
+
+                // Set the flag to true to indicate that the data is being saved
+                isDataSaved = true;
+
                 // Get the selected option value
                 const selectedOption = document.getElementById("selectOption");
                 const selectedValue = selectedOption.options[selectedOption.selectedIndex].value;
-        
+                 // Check if a value is selected
+                if (!selectedValue) {
+                    alert('Please select an option before placing your order.');
+                    return;
+                }
                 // Get the currently logged-in user
                 const user = auth.currentUser;
-        
+
                 if (user) {
                     // Store the selected value in Firestore subcollection
                     const userId = user.uid;
-        
+
                     // Reference to the parent document
                     const parentDocRef = doc(db, 'userRecords', userId);
                     const countersDocRef = doc(db, 'counters', 'wpLtpQGyMnP3tbiliXB0');
-        
+
                     // Use a transaction to ensure atomicity
                     await runTransaction(db, async (transaction) => {
                         const countersDocSnapshot = await transaction.get(countersDocRef);
                         const orderNumber = countersDocSnapshot.data().OrderNumber;
-        
+
                         // Update the OrderNumber in the counters collection
                         transaction.update(countersDocRef, { OrderNumber: orderNumber + 1 });
-        
+
                         // Reference to the subcollection
                         const subcollectionRef = collection(parentDocRef, 'history');
-        
+
                         // Add a document to the subcollection with the updated OrderNumber value
                         await addDoc(subcollectionRef, {
                             value: selectedValue,
@@ -159,7 +175,7 @@
                             orderNumber: orderNumber + 1, // Include the updated OrderNumber in your subcollection document
                         });
                     });
-        
+
                     // Display a success message
                     console.log(`Selected value "${selectedValue}" has been stored in Firestore`);
                     alert(`Your document "${selectedValue}" is ordered. Check the dashboard for status`);
@@ -167,16 +183,20 @@
                     // User is not logged in, handle accordingly
                     alert('Please log in to place your order.');
                 }
+
             } catch (error) {
                 // Handle any errors
                 console.error(error);
                 alert('Error storing selected value in Firestore.');
+            } finally {
+                // Reset the flag to false, regardless of success or failure
+                isDataSaved = false;
+
+                // Hide the modal
+                hideModal();
             }
-        
-            // Hide the modal
-            hideModal();
         });
-        
+
 
             
 

@@ -65,35 +65,38 @@ const userId = user.uid;
 const parentDocRef = doc(db, 'userRecords', userId);
 const subcollectionRef = collection(parentDocRef, 'history');
 const querySnap = await getDocs(subcollectionRef);
+// Sort the documents based on the timestamp in latest to oldest order
+const sortedDocs = querySnap.docs.sort((a, b) => b.data().timestamp - a.data().timestamp);
 
-const dataDisplay = document.getElementById('data-display'); // Get the HTML element
+ // Get the HTML element
+const dataDisplay = document.getElementById('data-display');
 const docValue = document.getElementById('document-value');
 let totalClaims = 0;
 let hasReadyDocuments = false;
-querySnap.forEach((doc) => {
+
+sortedDocs.forEach((doc) => {
  const data = doc.data();
+ const declineReason = data.declineReason;
  const timestamp = data.timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
  const value = data.value;
  const status = data.status;
  const cDate = data.claimDate;
  const orderNum = data.orderNumber;
- console.log(cDate);
  
  // Create a new HTML element to display the formatted data
  const dataElement = document.createElement('p');
  const date = document.createElement('p');
  const satus = document.createElement('p');
  const divider = document.createElement('p');
- const claimDateElement = document.createElement('p');
+ const claimInfoElement = document.createElement('p');
  const orderNumElement = document.createElement('p');
 
  dataElement.textContent = `Document: ${value}`;
  orderNumElement.textContent =  `order number: ${orderNum}`;
  satus.textContent = `Status: ${status}`;
- date.textContent = `Date: ${timestamp.toLocaleString()}`;
+ date.textContent = `request date: ${timestamp.toLocaleString()}`;
  divider.textContent = `==============================`;
 
- claimDateElement.textContent = `Claim Date: ${cDate}`;
 
  if (status === 'ready for pickup') {
   hasReadyDocuments = true;
@@ -103,10 +106,7 @@ querySnap.forEach((doc) => {
   const claim = document.createElement('p');
   const sched = document.createElement('p');
   const amount = document.getElementById('amount');
-  const claimDateElement = document.getElementById('Date'); // Add this line
-
-  // Convert the claimDate string to a JavaScript Date object
-  const claimDateObject = new Date(cDate);
+ 
 
 
   claim.textContent = `Document: ${value} -Order #: ${orderNum} `;
@@ -117,14 +117,20 @@ querySnap.forEach((doc) => {
   docValue.appendChild(divider);
 
   amount.textContent = 'To pay: ' + totalAmount * (++totalClaims) + ' Pesos';
-} 
+  claimInfoElement.textContent = `Claim Date: ${cDate}`;
+} else if (status === 'denied-request') {
+  // Display declineReason instead of claimDate for denied requests
+  claimInfoElement.innerHTML = `<br>Denial Reason:<br>${declineReason}`;
+}else if (status === 'released') {
+  claimInfoElement.textContent = `released date: ${cDate}`;
+}
 
  // Append the new data element to the data-display div
  dataDisplay.appendChild(dataElement);
  dataDisplay.appendChild(orderNumElement);
  dataDisplay.appendChild(satus);
  dataDisplay.appendChild(date);
- dataDisplay.appendChild(claimDateElement); 
+ dataDisplay.appendChild(claimInfoElement); 
  dataDisplay.appendChild(divider);
  
 });

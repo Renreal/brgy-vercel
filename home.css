@@ -163,9 +163,11 @@ a img{
     overflow: scroll;
     overflow-x: scroll;
     overflow-y: scroll;
-    width: 70vw;
     height: 50vh;
     text-align: center;
+    flex-direction: column;
+    align-items: center;
+    width: 45vw;
 }
 #confirmationModal img{
     width: 4rem;
@@ -186,9 +188,8 @@ a img{
     z-index: 999;
 }
 
-.modalBtn{
-    display: flex;
-    justify-content: space-evenly;
+.modalBtn button{
+   margin: 1rem;
 }
 
 
@@ -216,10 +217,11 @@ a img{
     background-color: aliceblue;
     padding: 1rem;
     height: 50vh;
+    width: 35vw;
     overflow: auto; 
 }
 #data-display p{
-    color:green;
+    color:black;
     text-transform: capitalize;
 }
 .dataContainer{
@@ -232,6 +234,7 @@ a img{
     font-size: 1.5rem;
 }
 .header{
+    width: 35vw;
     background-color: black;
     color: aliceblue;
     text-transform: uppercase;
@@ -388,6 +391,21 @@ a img{
     box-shadow: 0 0 1rem rgb(0 0 0 / 79%);
     z-index: 1000;
 }
+#pop-up2{
+    display: none;
+    margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 1rem rgb(0 0 0 / 79%);
+    z-index: 1000;
+    flex-direction: column;
+    width: -webkit-fill-available;
+}
 .btns-wrapper{
     display: flex;
     margin-top: 2rem;
@@ -525,5 +543,12 @@ a img{
 .div{
     
     border-bottom: solid;
+    margin: 1rem;
+}
+.orderContainer{
+    margin: 1rem 21rem 1rem 0rem;
+    font-weight: bold;
+}
+.confirm{
     margin: 1rem;
 }

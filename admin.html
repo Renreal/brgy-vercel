@@ -21,7 +21,7 @@
                 </div>
 
 
-                <div class="mainItems">
+    <div class="mainItems">
                 <span id="date"> date</span>
                     <div class="orders">
                         <p class="label">Orders</p>
@@ -34,7 +34,7 @@
                                     <th>Type of Document</th>
                                     <th>Date requested</th>
                                     <th>Set claim date</th>
-                                    <th>Set Satus</th>
+                                    <th>Set status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,67 +66,75 @@
                         <p>NOTE!</p>
                         <p id="info">This action will notify the user that their document is ready.</p>
                         <p>Proceed action?</p>
-
                         <div class="btns-wrapper">
                             <button id="yes">yes</button>
                             <button id="cancel">cancel</button>
                         </div>
                     </div>
 
-                    <div id="info-modal">
-                        <span class="exit" id="exit">X</span>
-
-
-                        <div class="image">
-                            <img src="LOGO.png" alt="2x2">
+                    <div id="pop-up2">
+                        Reason for denying this request: 
+                     <textarea name="declineReason" id="declineReason" cols="2" rows="5"></textarea>
+                        <div class="btns-wrapper">
+                            <button id="save">SAVE MESSAGE</button>
                         </div>
-
-
-                <div class="mainContainer">
-                    <div class="div2">
-                        name:
-                        <p id="fullName">fullname</p>
-                        nationality:
-                        <p id="nationality"> nationality</p>
-                        Address:
-                        <p id="address">address </p>
-                        Age:
-                        <p id="userAge"> Age</p>
-                        Birthplace:
-                          <p id="bplace"> birth place</p>
-                        Birthday:
-                        <p id="bday"> birthday</p>
-                        </div>
-
-                <div class="div3">
-                  
-                        
-                    contact No.    
-                    <p id="contact">contact Number </p>
-                    Email:  
-                    <p id="Uemail"> Email</p>
-                    Gender:    
-                    <p id="Ugender">gender </p>
-                    Satus:    
-                    <p id="status"> status</p>
-                    Occopation:    
-                    <p id="occupation">work </p>
-                        </div>
-                        </div>
-                        
                     </div>
 
-                    
+
+                        <div id="info-modal">
+                                            <span class="exit" id="exit">X</span>
+
+
+                                            <div class="image">
+                                                <img src="LOGO.png" alt="2x2">
+                                            </div>
+
+
+                            <div class="mainContainer">
+                                        <div class="div2">
+                                            name:
+                                            <p id="fullName">fullname</p>
+                                            nationality:
+                                            <p id="nationality"> nationality</p>
+                                            Address:
+                                            <p id="address">address </p>
+                                            Age:
+                                            <p id="userAge"> Age</p>
+                                            Birthplace:
+                                            <p id="bplace"> birth place</p>
+                                            Birthday:
+                                            <p id="bday"> birthday</p>
+                                            </div>
+
+                                    <div class="div3">
+                                    
+                                            
+                                        contact No.    
+                                        <p id="contact">contact Number </p>
+                                        Email:  
+                                        <p id="Uemail"> Email</p>
+                                        Gender:    
+                                        <p id="Ugender">gender </p>
+                                        status   
+                                        <p id="status"> status</p>
+                                        Occopation:    
+                                        <p id="occupation">work </p>
+                                    </div>
+                            </div>
+                                            
+                        </div>
+
+                                        
 
 
 
 
 
 
-                </div>
+    </div>
                 
                 
-   </div>
+</div>
 
    <script src="admin.js" type="module"></script>
 </body>

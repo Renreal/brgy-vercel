@@ -39,7 +39,7 @@ const updateNavItems = async (user) => {
       // User is logged in
       navItemsContainer.innerHTML = `
           <a href="#about">About Us</a>
-          <a href="newDashboard.html">Notifications</a>
+          <a href="newDashboard.html">Request Logs</a>
           <a href="/LandingPage.html">Dashboard</a>
           <a href="" id="profileImage"><img src="personIcon.svg">  </a> 
           <div class="logoutContainer">

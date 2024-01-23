@@ -40,7 +40,7 @@ const hasPendingStatus = async (historyCollectionRef) => {
     const data = historyDoc.data();
     const status = data.status;
     const orderNumber = data.orderNumber;
-    return (status === "pending" || status === "ready for pickup") && orderNumber !== undefined;
+    return orderNumber !== undefined;
   });
 };
 
@@ -53,6 +53,43 @@ const collectionExists = async (collectionRef) => {
   return !snapshot.empty;
 };
 const rowStates = [];
+
+// Define a variable to store the textarea element  
+let declineReasonTextarea;
+let currentHistoryDoc;
+
+// Function to show the textarea
+const showTextArea = () => {
+    document.getElementById('pop-up2').style.display = 'flex';
+    declineReasonTextarea = document.getElementById('declineReason');
+};
+
+
+
+document.getElementById('save').addEventListener('click', async () => {
+  try {
+    if (!currentHistoryDoc) {
+      console.error('Error saving message: currentHistoryDoc is not defined');
+      return;
+  }
+      // Get the value of the textarea
+      const declineReason = declineReasonTextarea.value;
+
+      // You can add additional validation or processing if needed
+
+      // Update the document with the declineReason
+      await updateDoc(currentHistoryDoc.ref, { status: 'denied-request', declineReason: declineReason });
+      alert("document declined successfully");
+      document.getElementById('pop-up2').style.display = 'none';
+      location.reload();
+  } catch (error) {
+      console.error('Error saving message:', error);
+  }
+});
+
+
+
+
 
 const displayUserNames = async () => {
   try {
@@ -82,7 +119,7 @@ const displayUserNames = async () => {
             const status = historyDoc.data().status;
             const order = historyDoc.data().orderNumber;
   
-            if (status === 'pending' || status === "ready for pickup" && order !== undefined) {
+            if (order !== undefined) {
               const value = historyDoc.data().value;
               const orderNum = historyDoc.data().orderNumber;
   
@@ -132,12 +169,20 @@ const displayUserNames = async () => {
   
               checkSymbolSpan.addEventListener('click', async () => {
                 const index = dateInputs.indexOf(setClaimDateInput);
-                showModal(rowStates[index]);
-  
+                const selectedStatus = rowStates[index].setStatusSelect.value;
+
+                if (selectedStatus === 'denied-request') {
+                  showTextArea();
+                } else {
+                  showModal(rowStates[index]);
+                }
+                currentHistoryDoc = historyDoc;
+
+
                 const yesButton = document.getElementById('yes');
                 yesButton.addEventListener('click', async () => {
                   try {
-                    const selectedStatus = rowStates[index].setStatusSelect.value;
+                   
                     const selectedClaimDate = rowStates[index].setClaimDateInput.value;
   
                     if (selectedClaimDate) {
@@ -238,19 +283,23 @@ const displayUserNames = async () => {
         document.getElementById('info').textContent = 'This action will notify the user about their document status';
     }
 }
-       
 
 
               // Function to hide the modal 
               function hideModal() {
                 document.getElementById('pop-up').style.display = 'none';
+                document.getElementById('pop-up2').style.display = 'none';
+
               }
 
               //cancel button
               document.getElementById('cancel').addEventListener('click', () => {
               hideModal();
               });
-
+               //cancel button
+               document.getElementById('save').addEventListener('click', () => {
+                hideModal();
+                });
 
      //info modal funtions
             function showinfoModal() {
@@ -259,7 +308,8 @@ const displayUserNames = async () => {
           function hideinfoModal() {
               document.getElementById('info-modal').style.display = 'none';
           }
-
+         
+          
     //cancel button for info modal
           document.getElementById('exit').addEventListener('click', () => {
             hideinfoModal();
