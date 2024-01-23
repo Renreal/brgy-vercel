@@ -89,43 +89,87 @@ document.getElementById('save').addEventListener('click', async () => {
 
 
 
+// Add a new function to handle filtering based on order number
+const filterByOrderNumber = (orderNumber) => {
+  const table = document.getElementById('table1').getElementsByTagName('tbody')[0];
+  const rows = table.getElementsByTagName('tr');
 
+  for (let i = 0; i < rows.length; i++) {
+    const orderNoCell = rows[i].getElementsByTagName('td')[0];
+    if (orderNoCell) {
+      const orderNoText = orderNoCell.textContent || orderNoCell.innerText;
+      // Hide or show rows based on the search input
+      rows[i].style.display = orderNoText.includes(orderNumber) ? '' : 'none';
+    }
+  }
+};
 
 const displayUserNames = async () => {
   try {
-      // Query the "userRecords" collection
-      const userRecordsCollection = collection(db, 'userRecords');
-      const querySnapshot = await getDocs(userRecordsCollection);
+    // Query the "userRecords" collection
+    const userRecordsCollection = collection(db, 'userRecords');
+    const querySnapshot = await getDocs(userRecordsCollection);
 
-      // Get the table
-      const table = document.getElementById('table1').getElementsByTagName('tbody')[0];
+    // Get the table
+    const table = document.getElementById('table1').getElementsByTagName('tbody')[0];
 
-      // Clear previous content
-      table.innerHTML = '';
+    // Clear previous content
+    table.innerHTML = '';
 
-      // Loop through the documents and display rows in the table
-      querySnapshot.forEach(async (doc) => {
-        const historyID = doc.data().userId;
-        const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
-        const hasPending = await hasPendingStatus(historyCollectionRef);
-  
-        if (hasPending) {
-          const userData = doc.data();
-          const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-  
-          const historyQuerySnapshot = await getDocs(historyCollectionRef);
-  
-          historyQuerySnapshot.forEach((historyDoc) => {
+    // Add the search input element by its ID
+    const searchInput = document.getElementById('orderNumberSearch');
+    // Add an input event listener to the search input
+    searchInput.addEventListener('input', (event) => {
+      const searchTerm = event.target.value.trim();
+      filterByOrderNumber(searchTerm);
+    });
+
+    // Loop through the documents and display rows in the table
+    querySnapshot.forEach(async (doc) => {
+      const historyID = doc.data().userId;
+      const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
+      const hasPending = await hasPendingStatus(historyCollectionRef);
+
+      if (hasPending) {
+        const userData = doc.data();
+        const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
+
+        const historyQuerySnapshot = await getDocs(historyCollectionRef);
+
+        // Get all history documents and group them by value
+        const groupedHistory = {};
+        historyQuerySnapshot.forEach((historyDoc) => {
+          const value = historyDoc.data().value;
+          if (!groupedHistory[value]) {
+            groupedHistory[value] = [];
+          }
+          groupedHistory[value].push(historyDoc);
+        });
+
+        // Iterate over each group and sort by timestamp in descending order
+        for (const value in groupedHistory) {
+          groupedHistory[value].sort((a, b) =>
+            b.data().timestamp.toMillis() - a.data().timestamp.toMillis()
+          );
+        }
+
+        // Iterate over each group and display the rows in the table
+        for (const value in groupedHistory) {
+          groupedHistory[value].forEach((historyDoc) => {
             const status = historyDoc.data().status;
             const order = historyDoc.data().orderNumber;
-  
+
             if (order !== undefined) {
               const value = historyDoc.data().value;
               const orderNum = historyDoc.data().orderNumber;
-  
+
               const reqDate = historyDoc.data().timestamp.toDate();
-              const formattedReqDate = reqDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  
+              const formattedReqDate = reqDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              });
+
               const newRow = table.insertRow();
               const orderNoCell = newRow.insertCell(0);
               const nameCell = newRow.insertCell(1);
@@ -133,40 +177,42 @@ const displayUserNames = async () => {
               const dateRequestedCell = newRow.insertCell(3);
               const setClaimDateCell = newRow.insertCell(4);
               const setStatusCell = newRow.insertCell(5);
-  
+
               orderNoCell.textContent = orderNum;
               nameCell.textContent = userName;
               typeCell.textContent = value;
               dateRequestedCell.textContent = formattedReqDate;
-  
+
               const docStatus = historyDoc.data().status;
               setStatusCell.textContent = docStatus;
               setStatusCell.classList.add('status');
-  
+
               const checkSymbolSpan = document.createElement('span');
               checkSymbolSpan.innerHTML = '&#9989;';
-  
+
               const setClaimDateInput = document.createElement('input');
               setClaimDateInput.type = 'date';
               setClaimDateInput.id = 'setClaimDateInput';
               setClaimDateInput.addEventListener('change', (event) => {});
-  
+
               dateInputs.push(setClaimDateInput);
               setClaimDateCell.appendChild(setClaimDateInput);
-  
+
               const setStatusSelect = document.createElement('select');
               setStatusSelect.classList.add('drop-down');
               setStatusSelect.addEventListener('change', (event) => {
                 console.log('Selected status:', event.target.value);
               });
-  
-              ['pending', 'ready for pickup', 'denied-request', 'released'].forEach((statusOption) => {
-                const option = document.createElement('option');
-                option.value = statusOption;
-                option.textContent = statusOption;
-                setStatusSelect.appendChild(option);
-              });
-  
+
+              ['pending', 'ready for pickup', 'denied-request', 'released'].forEach(
+                (statusOption) => {
+                  const option = document.createElement('option');
+                  option.value = statusOption;
+                  option.textContent = statusOption;
+                  setStatusSelect.appendChild(option);
+                }
+              );
+
               checkSymbolSpan.addEventListener('click', async () => {
                 const index = dateInputs.indexOf(setClaimDateInput);
                 const selectedStatus = rowStates[index].setStatusSelect.value;
@@ -178,24 +224,25 @@ const displayUserNames = async () => {
                 }
                 currentHistoryDoc = historyDoc;
 
-
                 const yesButton = document.getElementById('yes');
                 yesButton.addEventListener('click', async () => {
                   try {
-                   
                     const selectedClaimDate = rowStates[index].setClaimDateInput.value;
-  
+
                     if (selectedClaimDate) {
-                      await updateDoc(historyDoc.ref, { status: selectedStatus, claimDate: selectedClaimDate });
+                      await updateDoc(historyDoc.ref, {
+                        status: selectedStatus,
+                        claimDate: selectedClaimDate,
+                      });
                       console.log('Status updated:', selectedStatus);
-  
+
                       const updatedHistoryDoc = await getDoc(historyDoc.ref);
-  
+
                       if (updatedHistoryDoc.exists()) {
                         console.log('Updated value:', updatedHistoryDoc.data().status);
                         console.log('Updated orderNum:', updatedHistoryDoc.data().orderNumber);
                         console.log('Updated claimDate:', updatedHistoryDoc.data().claimDate);
-  
+
                         alert('Status updated: ' + selectedStatus);
                         location.reload();
                       } else {
@@ -211,25 +258,25 @@ const displayUserNames = async () => {
                   }
                 });
               });
-  
+
               setStatusCell.appendChild(setStatusSelect);
               setStatusCell.appendChild(checkSymbolSpan);
-  
+
               orderNoCell.addEventListener('click', async () => {
                 try {
                   const userDoc = await getDoc(doc.ref);
-  
+
                   if (userDoc.exists()) {
                     const userData = userDoc.data();
                     console.log('User Data:', userDoc.data());
-  
+
                     console.log('Clicked orderNum:', orderNum);
                     console.log('User Data:', userData);
-  
+
                     showinfoModal();
-  
+
                     document.getElementById('fullName').textContent = `${userData.name} ${userData.middlename} ${userData.lastname}`;
-                    document.getElementById('nationality').textContent =`${userData.Nationality}`;
+                    document.getElementById('nationality').textContent = `${userData.Nationality}`;
                     document.getElementById('address').textContent = ` ${userData.address}`;
                     document.getElementById('userAge').textContent = ` ${userData.age}`;
                     document.getElementById('bplace').textContent = `${userData.birth_place}`;
@@ -246,25 +293,27 @@ const displayUserNames = async () => {
                   console.error('Error retrieving user data:', error);
                 }
               });
-  
+
               // Store the state for this row
               const rowState = {
                 setClaimDateInput: setClaimDateInput,
                 setStatusSelect: setStatusSelect,
               };
-  
+
               rowStates.push(rowState);
             }
           });
         }
-      });
-    } catch (error) {
-      console.error('Error displaying user names:', error);
-    }
-  };
-  
-  // Call the function to display user names
-  displayUserNames();
+      }
+    });
+  } catch (error) {
+    console.error('Error displaying user names:', error);
+  }
+};
+
+// Call the function to display user names
+displayUserNames();
+
 
 
 

@@ -351,8 +351,18 @@ a img{
 }
 .orders .label{
     padding: 0.5rem;
-    color:black;
+    color:white;
     background-color:black;
+}
+.searchBar{
+    display: flex;
+    background: black;
+    align-items: center;
+    justify-content: flex-start;
+}
+.searchBar input{
+ 
+  padding: 0.3rem;
 }
 .order-container {
     display: flex;
