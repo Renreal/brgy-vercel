@@ -134,13 +134,13 @@ const displayUserNames = async () => {
 const allRows = [];
 
 // Loop through the documents and display rows in the table
-querySnapshot.forEach(async (doc) => {
-  const historyID = doc.data().userId;
+for (const userDoc of querySnapshot.docs) {
+  const historyID = userDoc.data().userId;
   const historyCollectionRef = collection(db, 'userRecords', historyID, 'history');
   const hasPending = await hasPendingStatus(historyCollectionRef);
 
   if (hasPending) {
-    const userData = doc.data();
+    const userData = userDoc.data();
     const userName = `${userData.name} ${userData.middlename} ${userData.lastname}`;
 
     const historyQuerySnapshot = await getDocs(historyCollectionRef);
@@ -155,21 +155,18 @@ querySnapshot.forEach(async (doc) => {
       groupedHistory[value].push(historyDoc);
     });
 
-    // Iterate over each group and sort by timestamp in descending order
-    for (const value in groupedHistory) {
-      groupedHistory[value].sort((a, b) =>
-        b.data().timestamp.toMillis() - a.data().timestamp.toMillis()
-      );
-
+  
+      for (const value in groupedHistory) {
+        groupedHistory[value].sort((a, b) =>
+          b.data().timestamp.toMillis() - a.data().timestamp.toMillis()
+        );
       // Iterate over each group and display the rows in the table
       groupedHistory[value].forEach((historyDoc) => {
-        const status = historyDoc.data().status;
-        const order = historyDoc.data().orderNumber;
-
-        if (order !== undefined) {
+        const orderNum = historyDoc.data().orderNumber;
+        console.log(historyDoc.data());
+        if (orderNum !== undefined) {
           const value = historyDoc.data().value;
           const orderNum = historyDoc.data().orderNumber;
-
           const reqDate = historyDoc.data().timestamp.toDate();
           const formattedReqDate = reqDate.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -189,7 +186,7 @@ querySnapshot.forEach(async (doc) => {
           nameCell.textContent = userName;
           typeCell.textContent = value;
           dateRequestedCell.textContent = formattedReqDate;
-
+          
           const docStatus = historyDoc.data().status;
           setStatusCell.textContent = docStatus;
           setStatusCell.classList.add('status');
@@ -212,7 +209,11 @@ querySnapshot.forEach(async (doc) => {
           setStatusSelect.addEventListener('change', (event) => {
             console.log('Selected status:', event.target.value);
           });
-
+          // Add a placeholder option
+          const placeholderOption = document.createElement('option');
+          placeholderOption.value = ''; // You can set an empty string or any other value
+          placeholderOption.textContent = 'select status';
+          setStatusSelect.appendChild(placeholderOption);
           ['pending', 'ready for pickup', 'denied-request', 'released'].forEach(
             (statusOption) => {
               const option = document.createElement('option');
@@ -273,9 +274,9 @@ querySnapshot.forEach(async (doc) => {
 
           orderNoCell.addEventListener('click', async () => {
             try {
-              const userDoc = await getDoc(doc.ref);
+              const user = await getDoc(userDoc.ref); // Corrected from doc.ref
 
-              if (userDoc.exists()) {
+              if (user.exists()) {
                 const userData = userDoc.data();
                 console.log('User Data:', userDoc.data());
 
@@ -315,21 +316,16 @@ querySnapshot.forEach(async (doc) => {
       });
     }
   }
-});
+};
 
 allRows.sort((rowA, rowB) => {
-  const timestampA = rowA.cells[3].textContent; // Assuming the timestamp is in the 4th cell (index 3)
-  const timestampB = rowB.cells[3].textContent;
-
-  // Compare timestamps within the same value group
-  return new Date(timestampB) - new Date(timestampA);
+  const timestampA = new Date(rowA.cells[3].textContent);
+  const timestampB = new Date(rowB.cells[3].textContent);
+  return timestampB - timestampA;
 });
-
 // Clear the table content
 table.innerHTML = '';
-allRows.forEach((row) => {
-  table.appendChild(row);
-});
+allRows.forEach((row) => table.appendChild(row));
 
   } catch (error) {
     console.error('Error displaying user names:', error);
