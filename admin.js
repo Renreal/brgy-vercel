@@ -319,8 +319,8 @@ for (const userDoc of querySnapshot.docs) {
 };
 
 allRows.sort((rowA, rowB) => {
-  const timestampA = new Date(rowA.cells[3].textContent);
-  const timestampB = new Date(rowB.cells[3].textContent);
+  const timestampA = new Date(rowA.cells[0].textContent);
+  const timestampB = new Date(rowB.cells[0].textContent);
   return timestampB - timestampA;
 });
 // Clear the table content
@@ -424,3 +424,4 @@ displayUserNames();
                 const dateElement = document.getElementById("date");
                 dateElement.textContent = currentDate.toDateString();
 
+            
