@@ -1,31 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        #dropdown {
-            display: none;
-        }
-    </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="home.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .topnav {
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    .topnav a {
+      float: left;
+      display: block;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
+
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+    }
+
+    .topnav a.active {
+      background-color: #04AA6D;
+      color: white;
+    }
+
+    .topnav .icon {
+      display: none;
+    }
+
+    @media screen and (max-width: 600px) {
+      .topnav a:not(:first-child) {display: none;}
+      .topnav a.icon {
+        float: right;
+        display: block;
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      .topnav.responsive {position: relative;}
+      .topnav.responsive .icon {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      .topnav.responsive a {
+        float: none;
+        display: block;
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <p id="text">hi</p>
-    <div id="dropdown">hello</div>
+<div class="topnav" id="myTopnav">
+  <div>
+    
+  </div>
+  <a href="#about">About Us</a>
+  <a href="newDashboard.html">Request Logs</a>
+  <a href="/LandingPage.html">Dashboard</a>
+  <a href="" id="profileImage"><img src="https://firebasestorage.googleapis.com/v0/b/authfun-b2577.appspot.com/o/userImages%2FkAVRqVJVjMdh14fCLE8EVLvphEi1%2F417379853_800699045404388_9072412966498188921_n.jpg?alt=media&amp;token=969e5152-89c9-41b0-b7e1-f9e0de756b98"> </a>
+  <div class="logoutContainer">
+    <a id="userName">peanut nayvel Yañez</a>
+    <div id="dropdown" style="display: block;">
+      <p id="signOutButton">Logout</p>
+    </div>
+  </div>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <i class="fa fa-bars"></i>
+  </a>
+</div>
 
-    <script type="module" src="delete.js"></script>
-    <script>
-        document.getElementById('text').addEventListener('click', toggleDropdown);
+<div style="padding-left:16px">
+  <h2>Responsive Topnav Example</h2>
+  <p>Resize the browser window to see how it works.</p>
+</div>
 
-        function toggleDropdown() {
-            var dropdown = document.getElementById('dropdown');
-            if (dropdown.style.display === 'none') {
-                dropdown.style.display = 'block';
-            } else {
-                dropdown.style.display = 'none';
-            }
-        }
-    </script>
+<script>
+  function myFunction() {
+    var x = document.getElementById("myTopnav");
+    if (x.className === "topnav") {
+      x.className += " responsive";
+    } else {
+      x.className = "topnav";
+    }
+  }
+</script>
+
 </body>
 </html>

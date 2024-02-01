@@ -180,7 +180,8 @@ for (const userDoc of querySnapshot.docs) {
           const typeCell = newRow.insertCell(2);
           const dateRequestedCell = newRow.insertCell(3);
           const setClaimDateCell = newRow.insertCell(4);
-          const setStatusCell = newRow.insertCell(5);
+          const currenStatus = newRow.insertCell(5);
+          const setStatusCell = newRow.insertCell(6);
 
           orderNoCell.textContent = orderNum;
           nameCell.textContent = userName;
@@ -188,8 +189,9 @@ for (const userDoc of querySnapshot.docs) {
           dateRequestedCell.textContent = formattedReqDate;
           
           const docStatus = historyDoc.data().status;
-          setStatusCell.textContent = docStatus;
-          setStatusCell.classList.add('status');
+          currenStatus.textContent = docStatus;
+          currenStatus.classList.add('status');
+         
 
           const checkSymbolSpan = document.createElement('span');
           checkSymbolSpan.innerHTML = '&#9989;';
@@ -268,7 +270,7 @@ for (const userDoc of querySnapshot.docs) {
               }
             });
           });
-
+          setStatusCell.classList.add('setStatus');
           setStatusCell.appendChild(setStatusSelect);
           setStatusCell.appendChild(checkSymbolSpan);
 
